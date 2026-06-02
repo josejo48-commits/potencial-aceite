@@ -35,7 +35,7 @@
 #edit-modal.open{display:flex}
 .em-box{
   background:#0f1628;border:1px solid rgba(96,165,250,.25);border-radius:20px;
-  width:100%;max-width:720px;max-height:90vh;overflow-y:auto;
+  width:100%;max-width:720px;max-height:92vh;overflow-y:auto;-webkit-overflow-scrolling:touch;
   box-shadow:0 24px 80px rgba(0,0,0,.7),0 0 0 1px rgba(96,165,250,.1);
 }
 .em-head{
@@ -47,7 +47,7 @@
 .em-title{font-family:'Oswald',sans-serif;font-weight:600;font-size:16px;color:#60a5fa;letter-spacing:.06em;text-transform:uppercase}
 .em-close{background:none;border:none;color:rgba(255,255,255,.45);cursor:pointer;font-size:22px;line-height:1;padding:2px 8px;border-radius:6px;transition:all .15s}
 .em-close:hover{background:rgba(239,68,68,.15);color:#fca5a5}
-.em-body{padding:20px 24px}
+.em-body{padding:16px;}
 .em-section{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#60a5fa;margin:18px 0 10px;display:flex;align-items:center;gap:8px}
 .em-section::after{content:'';flex:1;height:1px;background:rgba(96,165,250,.15)}
 .em-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:4px}
@@ -247,6 +247,12 @@ h1 em{color:#60a5fa;font-style:normal}
 .btn-save:disabled{opacity:.4;cursor:not-allowed;transform:none}
 .save-msg{font-size:12px;font-weight:700;color:#86efac;letter-spacing:.06em;text-transform:uppercase;animation:fadeIn .4s ease}
 
+@media(max-width:600px){
+  #edit-modal{padding:0;align-items:flex-end}
+  .em-box{max-height:95vh;border-radius:18px 18px 0 0;width:100%}
+  .em-grid{grid-template-columns:1fr!important}
+  .em-field{margin-bottom:8px}
+}
 /* CALIDAD CARD */
 .calidad-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:1.25rem}
 .calidad-field{background:#f8faff;border:1.5px solid #e2e8f0;border-radius:12px;padding:12px 14px;transition:border-color .2s}
