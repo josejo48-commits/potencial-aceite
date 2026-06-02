@@ -565,7 +565,6 @@ td.date{color:rgba(255,255,255,.4);font-family:'JetBrains Mono',monospace;font-s
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
     import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDWoJcMOWlzOTrD120e8pZbr9DWvHBUbz0",
@@ -578,38 +577,16 @@ td.date{color:rgba(255,255,255,.4);font-family:'JetBrains Mono',monospace;font-s
 
     const app  = initializeApp(firebaseConfig);
     const db   = getFirestore(app);
-    const auth = getAuth(app);
-    const provider = new GoogleAuthProvider();
-
     // ── Expose to global scope ──
-    window._fb = { db, auth, provider, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, onSnapshot, query, orderBy, serverTimestamp, signInWithPopup, signOut, onAuthStateChanged };
+    window._fb = { db, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, onSnapshot, query, orderBy, serverTimestamp };
 
-    // ── Auth state ──
-    onAuthStateChanged(auth, function(user){
-      window._currentUser = user || null;
-      updateAuthUI(user);
-      if(user) suscribirHistorial();
-    });
+    // ── Auto-start historial (no login required) ──
+    window._currentUser = null;
+    suscribirHistorial();
   </script>
 </head>
 <body>
 
-<div id="auth-bar">
-  <div id="auth-user-area">
-    <div class="auth-notice" id="auth-notice">🔒 Inicia sesión con Google para guardar registros y verlos desde cualquier dispositivo</div>
-    <div class="auth-user" id="auth-user-info" style="display:none">
-      <img id="auth-avatar" src="" alt="">
-      <span id="auth-name"></span>
-      <span style="color:rgba(255,255,255,.25);font-size:10px" id="auth-email"></span>
-    </div>
-  </div>
-  <span id="fb-status"></span>
-  <button class="btn-auth btn-signin" id="btn-signin" onclick="fbSignIn()">
-    <svg width="14" height="14" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:5px"><path fill="#fff" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#fff" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#fff" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#fff" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-    Iniciar sesión
-  </button>
-  <button class="btn-auth btn-signout" id="btn-signout" style="display:none" onclick="fbSignOut()">Cerrar sesión</button>
-</div>
 
 <div class="hero">
 <canvas id="cross-canvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0"></canvas>
@@ -2447,41 +2424,9 @@ function fbSetStatus(s,txt){
   if(s){el.className=s;el.textContent=txt;setTimeout(function(){el.style.display='none';el.className='';},2500);}
 }
 
-function updateAuthUI(user){
-  var noticeEl = document.getElementById('auth-notice');
-  var infoEl   = document.getElementById('auth-user-info');
-  var signinBtn= document.getElementById('btn-signin');
-  var signoutBtn=document.getElementById('btn-signout');
-  var avatarEl = document.getElementById('auth-avatar');
-  var nameEl   = document.getElementById('auth-name');
-  var emailEl  = document.getElementById('auth-email');
-  if(user){
-    if(noticeEl) noticeEl.style.display='none';
-    if(infoEl)   infoEl.style.display='flex';
-    if(signinBtn) signinBtn.style.display='none';
-    if(signoutBtn) signoutBtn.style.display='';
-    if(avatarEl) avatarEl.src = user.photoURL||'';
-    if(nameEl)   nameEl.textContent = user.displayName||'Usuario';
-    if(emailEl)  emailEl.textContent = user.email||'';
-  } else {
-    if(noticeEl) noticeEl.style.display='';
-    if(infoEl)   infoEl.style.display='none';
-    if(signinBtn) signinBtn.style.display='';
-    if(signoutBtn) signoutBtn.style.display='none';
-  }
-}
 
-function fbSignIn(){
-  var fb = window._fb;
-  if(!fb){ alert('Firebase aún cargando, espera un momento.'); return; }
-  fb.signInWithPopup(fb.auth, fb.provider).catch(function(e){ alert('Error al iniciar sesión: '+e.message); });
-}
 
-function fbSignOut(){
-  var fb = window._fb;
-  if(!fb) return;
-  fb.signOut(fb.auth);
-}
+
 
 // ── AUTO-FILL PROVEEDOR ──
 function autoFillProveedor(){
@@ -2613,9 +2558,8 @@ function calcCalidad(){
 // ── GUARDAR ──
 function guardarRegistro(){
   var fb = window._fb;
-  var user = window._currentUser;
+  var user = { uid: 'anonimo', displayName: 'Analista', email: '', photoURL: '' };
   if(!fb){ alert('Firebase no disponible.'); return; }
-  if(!user){ alert('Inicia sesión con Google para guardar registros.'); return; }
 
   var placa=document.getElementById('placa').value.trim().toUpperCase();
   var proveedor=document.getElementById('proveedor').value.trim();
@@ -2698,11 +2642,8 @@ function limpiarFormulario(){
 // ── ELIMINAR REGISTRO ──
 function eliminarRegistro(id){
   var fb = window._fb;
-  var user = window._currentUser;
   var r = _memHist.find(function(x){return x.id===id});
   if(!r){ return; }
-  if(!user){ alert('Inicia sesión para eliminar registros.'); return; }
-  if(r.autorUid && r.autorUid !== user.uid){ alert('Solo el autor puede eliminar este registro.'); return; }
   if(!confirm('¿Eliminar este registro?')) return;
   if(!r._docId){ alert('ID de documento no encontrado.'); return; }
   fbSetStatus('syncing','Eliminando…');
@@ -2717,8 +2658,7 @@ function eliminarRegistro(id){
 // ── LIMPIAR HISTORIAL ──
 function limpiarHistorial(){
   var fb = window._fb;
-  var user = window._currentUser;
-  if(!user){ alert('Inicia sesión para limpiar el historial.'); return; }
+
   if(!confirm('¿Eliminar TODOS los registros de la nube? Esta acción no se puede deshacer.')) return;
   fbSetStatus('syncing','Limpiando…');
   var promises = _memHist
@@ -2810,9 +2750,9 @@ function renderHistorial(){
     return;
   }
 
-  var currentUid = window._currentUser ? window._currentUser.uid : null;
+  var currentUid = 'anonimo';
   var rows=filtered.map(function(r,i){
-    var isOwner = currentUid && (!r.autorUid || r.autorUid === currentUid);
+    var isOwner = true;
     var arClass=r.estado==='ok'?'ar-ok':r.estado==='low'?'ar-low':'ar-high';
     var qBadge='';
     if(r.calidad&&r.calidad.rff>0){
@@ -3226,8 +3166,7 @@ function guardarEdicion(){
   };
 
   var fb = window._fb;
-  var user = window._currentUser;
-  if(!user){ alert('Inicia sesión para editar registros.'); return; }
+
   if(r.autorUid && r.autorUid !== user.uid){ alert('Solo el autor puede editar este registro.'); return; }
   if(!r._docId){ alert('ID de documento no encontrado.'); return; }
 
