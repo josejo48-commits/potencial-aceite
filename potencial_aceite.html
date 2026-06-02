@@ -667,12 +667,12 @@ td.date{color:rgba(255,255,255,.4);font-family:'JetBrains Mono',monospace;font-s
     <div class="fields">
       <div class="field">
         <label><em>C3</em>Peso muestra raquilas</label>
-        <input type="number" id="praq" value="3500" step="1" oninput="calcDebounced()">
+        <input type="number" id="praq" step="1" oninput="calcDebounced()">
         <div class="hint">Gramos &mdash; luego del cuarteo</div>
       </div>
       <div class="field">
         <label><em>C8</em>Peso frutos normales</label>
-        <input type="number" id="pfn" value="1925" step="1" oninput="calcDebounced()">
+        <input type="number" id="pfn" step="1" oninput="calcDebounced()">
         <div class="hint">Sin partenocárpicos ni abortados</div>
       </div>
     </div>
@@ -701,17 +701,17 @@ td.date{color:rgba(255,255,255,.4);font-family:'JetBrains Mono',monospace;font-s
     <div class="fields">
       <div class="field">
         <label><em>C11</em>Peso frutos muestra</label>
-        <input type="number" id="pfm" value="450" step="1" oninput="calcDebounced()">
+        <input type="number" id="pfm" step="1" oninput="calcDebounced()">
         <div class="hint">Gramos &mdash; frutos normales</div>
       </div>
       <div class="field">
         <label><em>C13</em>Peso nueces frescas</label>
-        <input type="number" id="pnf" value="135" step="1" oninput="calcDebounced()">
+        <input type="number" id="pnf" step="1" oninput="calcDebounced()">
         <div class="hint">Después del despulpado</div>
       </div>
       <div class="field">
         <label><em>C14</em>Peso cuesco seco</label>
-        <input type="number" id="pcs" value="81" step="1" oninput="calcDebounced()">
+        <input type="number" id="pcs" step="1" oninput="calcDebounced()">
         <div class="hint">Opcional &mdash; para % cuesco</div>
       </div>
     </div>
@@ -737,17 +737,17 @@ td.date{color:rgba(255,255,255,.4);font-family:'JetBrains Mono',monospace;font-s
     <div class="fields">
       <div class="field">
         <label><em>C15</em>Cápsula vacía</label>
-        <input type="number" id="cap" value="104.750" step="0.001" oninput="calcDebounced()">
+        <input type="number" id="cap" step="0.001" oninput="calcDebounced()">
         <div class="hint">Gramos &mdash; tarada e identificada</div>
       </div>
       <div class="field">
         <label><em>C16</em>Mesocarpio fresco</label>
-        <input type="number" id="mfr" value="40" step="0.001" oninput="calcDebounced()">
+        <input type="number" id="mfr" step="0.001" oninput="calcDebounced()">
         <div class="hint">Gramos &mdash; solo mesocarpio</div>
       </div>
       <div class="field">
         <label><em>C17</em>Cápsula + mesocarpio seco</label>
-        <input type="number" id="csec" value="132.350" step="0.001" oninput="calcDebounced()">
+        <input type="number" id="csec" step="0.001" oninput="calcDebounced()">
         <div class="hint">Gramos &mdash; salida del desecador</div>
       </div>
     </div>
@@ -2387,7 +2387,7 @@ function tag(t,c){return'<span class="tag '+c+'">'+t+'</span>'}
 function rb(v,mn,mx,l){if(isNaN(v))return'';if(v<mn)return tag('▲ '+l+' BAJO','t-warn');if(v>mx)return tag('▲ '+l+' ALTO','t-warn');return tag('● '+l+' NORMAL','t-ok')}
 function pct(v,d){d=d==null?1:d;return(isNaN(v)||v<0)?'—':v.toFixed(d)+' %'}
 function grm(v,d){d=d==null?3:d;return(isNaN(v)||v<0)?'—':v.toFixed(d)+' g'}
-function getVal(id){return parseFloat(document.getElementById(id).value)||0}
+function getVal(id){var v=parseFloat(document.getElementById(id).value);return isNaN(v)?NaN:v;}
 
 // ── FIREBASE HISTORIAL ──
 var _memHist = [];   // cache local en tiempo real
@@ -2444,18 +2444,21 @@ function autoFillProveedor(){
 
 // ── MAIN CALC ──
 var _lastAR=NaN, _lastFR=NaN, _lastMF=NaN, _lastHM=NaN, _lastAMF=NaN;
+var _debTimer=null;
+function calcDebounced(){clearTimeout(_debTimer);_debTimer=setTimeout(calc,120);}
 
 function calc(){
   var praq=getVal('praq'),pfn=getVal('pfn');
   var pfm=getVal('pfm'),pnf=getVal('pnf'),pcs=getVal('pcs');
   var cap=getVal('cap'),mfr=getVal('mfr'),csec=getVal('csec');
 
-  var fr=praq>0?(pfn/praq)*100:NaN;
-  var meso=pfm-pnf;
-  var mf=pfm>0?(meso/pfm)*100:NaN;
-  var cuesco=(pfm>0&&pcs>0)?(pcs/pfm)*100:NaN;
-  var mseco=csec-cap;
-  var hm=mfr>0?((mfr-mseco)/mfr)*100:NaN;
+  // Step-by-step — each step shows result independently
+  var fr=(!isNaN(praq)&&praq>0&&!isNaN(pfn))?(pfn/praq)*100:NaN;
+  var meso=(!isNaN(pfm)&&!isNaN(pnf))?pfm-pnf:NaN;
+  var mf=(!isNaN(pfm)&&pfm>0&&!isNaN(meso))?(meso/pfm)*100:NaN;
+  var cuesco=(!isNaN(pfm)&&pfm>0&&!isNaN(pcs)&&pcs>0)?(pcs/pfm)*100:NaN;
+  var mseco=(!isNaN(cap)&&!isNaN(csec))?csec-cap:NaN;
+  var hm=(!isNaN(mfr)&&mfr>0&&!isNaN(mseco))?((mfr-mseco)/mfr)*100:NaN;
   var amf=(!isNaN(hm)&&hm>=0)?82.3-(0.95*hm):NaN;
   var ar=(!isNaN(fr)&&!isNaN(mf)&&!isNaN(amf))?(fr*mf*amf)/10000:NaN;
 
@@ -2563,7 +2566,7 @@ function guardarRegistro(){
 
   var placa=document.getElementById('placa').value.trim().toUpperCase();
   var proveedor=document.getElementById('proveedor').value.trim();
-  var pesoCarga=getVal('peso-carga');
+  var el_pc=document.getElementById('peso-carga');var pesoCarga=el_pc&&el_pc.value!==''?parseFloat(el_pc.value)||0:0;
   var fecha=document.getElementById('fecha-analisis').value||new Date().toISOString().split('T')[0];
 
   if(!placa){alert('Ingresa la placa del vehículo antes de guardar.');return}
@@ -3043,7 +3046,7 @@ function emStep(id, d){
 }
 
 function emGetVal(id){
-  return parseFloat(document.getElementById(id).value)||0;
+  var v=parseFloat(document.getElementById(id).value);return isNaN(v)?NaN:v;
 }
 
 function recalcEdit(){
