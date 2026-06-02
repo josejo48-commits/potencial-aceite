@@ -3045,9 +3045,7 @@ function emStep(id, d){
   recalcEditCalidad();
 }
 
-function emGetVal(id){
-  var v=parseFloat(document.getElementById(id).value);return isNaN(v)?NaN:v;
-}
+function emGetVal(id){var v=parseFloat(document.getElementById(id).value);return isNaN(v)?0:v;}
 
 function recalcEdit(){
   var praq=emGetVal('em-praq'), pfn=emGetVal('em-pfn');
@@ -3140,7 +3138,7 @@ function guardarEdicion(){
   r.pesoCarga= parseFloat(document.getElementById('em-peso').value)||0;
 
   // Recalcular con nuevos inputs
-  var gv = function(id){return parseFloat(document.getElementById(id).value)||0;};
+  var gv = function(id){var v=parseFloat(document.getElementById(id).value);return isNaN(v)?0:v;};
   var praq=gv('em-praq'),pfn=gv('em-pfn'),pfm=gv('em-pfm'),pnf=gv('em-pnf');
   var cap=gv('em-cap'),mfr=gv('em-mfr'),csec=gv('em-csec'),pcs=gv('em-pcs');
 
@@ -3170,7 +3168,6 @@ function guardarEdicion(){
 
   var fb = window._fb;
 
-  if(r.autorUid && r.autorUid !== user.uid){ alert('Solo el autor puede editar este registro.'); return; }
   if(!r._docId){ alert('ID de documento no encontrado.'); return; }
 
   // Remove internal fields before saving
