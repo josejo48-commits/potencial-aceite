@@ -2777,7 +2777,7 @@ function renderHistorial(){
       '<td>'+(!isNaN(r.hm)?r.hm.toFixed(1)+'%':'—')+'</td>'+
       '<td>'+(qBadge||'<span style="color:rgba(255,255,255,.25)">—</span>')+'</td>'+
       '<td>'+
-        (isOwner?'<button onclick="openEditModal('+r.id+')" title="Editar registro" style="background:rgba(37,99,235,.2);border:1px solid rgba(96,165,250,.4);color:#60a5fa;cursor:pointer;padding:5px 12px;border-radius:7px;font-size:11px;font-weight:700;font-family:\'Oswald\',sans-serif;letter-spacing:.06em;transition:all .15s;margin-right:4px" onmouseover="this.style.background=\'rgba(37,99,235,.5)\'" onmouseout="this.style.background=\'rgba(37,99,235,.2)\'">✏ EDITAR</button>':'<span style="font-size:10px;color:rgba(255,255,255,.2);margin-right:4px">'+((r.autorNombre||'').split(' ')[0]||'Otro')+'</span>')+
+        (isOwner?'<button onclick="openEditModal(\''+r._docId+'\','+r.id+')" title="Editar registro" style="background:rgba(37,99,235,.2);border:1px solid rgba(96,165,250,.4);color:#60a5fa;cursor:pointer;padding:5px 12px;border-radius:7px;font-size:11px;font-weight:700;font-family:\'Oswald\',sans-serif;letter-spacing:.06em;transition:all .15s;margin-right:4px" onmouseover="this.style.background=\'rgba(37,99,235,.5)\'" onmouseout="this.style.background=\'rgba(37,99,235,.2)\'">✏ EDITAR</button>':'<span style="font-size:10px;color:rgba(255,255,255,.2);margin-right:4px">'+((r.autorNombre||'').split(' ')[0]||'Otro')+'</span>')+
         (isOwner?'<button onclick="eliminarRegistro('+r.id+')" title="Eliminar" style="background:rgba(185,28,28,.15);border:1px solid rgba(239,68,68,.3);color:#fca5a5;cursor:pointer;padding:5px 10px;border-radius:7px;font-size:11px;font-weight:700;font-family:\'Oswald\',sans-serif;letter-spacing:.06em;transition:all .15s" onmouseover="this.style.background=\'rgba(185,28,28,.4)\'" onmouseout="this.style.background=\'rgba(185,28,28,.15)\'">✕</button>':'')+
       '</td>'+
     '</tr>';
@@ -2992,11 +2992,11 @@ function toggleStep(hdr) {
 // ══ MODAL EDICIÓN ══
 var _editId = null;
 
-function openEditModal(id){
+function openEditModal(docId,id){
   var hist = getHistorial();
-  var r = hist.find(function(x){return x.id===id});
+  var r = hist.find(function(x){return x._docId===docId||(x.id===id&&!docId)});
   if(!r) return;
-  _editId = id;
+  _editId = r._docId||id;
 
   // Info general
   document.getElementById('em-fecha').value = r.fecha||'';
@@ -3126,7 +3126,7 @@ function recalcEditCalidad(){
 function guardarEdicion(){
   if(!_editId) return;
   var hist = getHistorial();
-  var idx = hist.findIndex(function(x){return x.id===_editId});
+  var idx = hist.findIndex(function(x){return x._docId===_editId||x.id===_editId});
   if(idx<0){alert('Registro no encontrado.');return;}
 
   var r = hist[idx];
