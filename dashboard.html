@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Dashboard · Potencial de Aceite</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+    import { getFirestore, collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDWoJcMOWlzOTrD120e8pZbr9DWvHBUbz8",
+      authDomain: "potencial-de-aceite.firebaseapp.com",
+      projectId: "potencial-de-aceite",
+      storageBucket: "potencial-de-aceite.firebasestorage.app",
+      messagingSenderId: "344846336116",
+      appId: "1:344846336116:web:4f10f86f923605c5179121"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db  = getFirestore(app);
+
+    const q = query(collection(db,'registros'), orderBy('ts','desc'));
+    onSnapshot(q, function(snap){
+      window._data = snap.docs.map(function(d){
+        var r = d.data(); r._docId = d.id; return r;
+      });
+      render(window._data);
+      document.getElementById('dot').classList.add('live');
+      document.getElementById('dot-txt').textContent = 'En vivo';
+    }, function(err){
+      document.getElementById('dot-txt').textContent = 'Error de conexión';
+      console.error(err);
+    });
+  </script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#060d1f;--card:#0c1830;--border:rgba(96,165,250,.15);
+      --blue:#3b82f6;--blue-dim:rgba(59,130,246,.15);
+      --ok:#22c55e;--warn:#f59e0b;--bad:#ef4444;
+      --text:#e2e8f0;--muted:rgba(255,255,255,.4);--muted2:rgba(255,255,255,.18);
+    }
+    html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:14px}
+    a{color:var(--blue);text-decoration:none}
+
+    /* ── TOP BAR ── */
+    .topbar{
+      display:flex;align-items:center;gap:14px;padding:14px 24px;
+      background:rgba(0,0,0,.4);border-bottom:1px solid var(--border);
+      position:sticky;top:0;z-index:100;backdrop-filter:blur(12px);
+    }
+    .topbar-logo{font-family:'Oswald',sans-serif;font-weight:700;font-size:18px;
+      background:linear-gradient(90deg,#60a5fa,#93c5fd);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .topbar-sub{font-size:11px;color:var(--muted);flex:1}
+    .live-dot{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:var(--muted)}
+    #dot{width:8px;height:8px;border-radius:50%;background:#374151;transition:background .5s}
+    #dot.live{background:var(--ok);box-shadow:0 0 8px var(--ok);animation:pulse 2s infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+    .last-update{font-size:10px;color:var(--muted2)}
+
+    /* ── FILTERS ── */
+    .filters{
+      display:flex;gap:10px;flex-wrap:wrap;align-items:center;
+      padding:14px 24px;background:rgba(0,0,0,.2);border-bottom:1px solid var(--border);
+    }
+    .filters label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+    .f-input,.f-select{
+      background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:8px;
+      padding:7px 12px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;outline:none;
+      transition:border-color .2s;
+    }
+    .f-input:focus,.f-select:focus{border-color:var(--blue)}
+    .f-select option{background:#0c1830}
+    .f-date{width:145px}
+    .f-search{width:200px}
+    .f-btn{
+      border:none;border-radius:8px;padding:7px 14px;font-family:'Oswald',sans-serif;
+      font-weight:600;font-size:12px;letter-spacing:.06em;text-transform:uppercase;
+      cursor:pointer;background:var(--blue-dim);color:#93c5fd;border:1px solid rgba(96,165,250,.25);
+      transition:all .15s;
+    }
+    .f-btn:hover{background:rgba(59,130,246,.3);color:#fff}
+    .f-btn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+
+    /* ── MAIN LAYOUT ── */
+    .main{padding:20px 24px;max-width:1400px;margin:0 auto}
+
+    /* ── KPI CARDS ── */
+    .kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:20px}
+    .kpi{
+      background:var(--card);border:1px solid var(--border);border-radius:14px;
+      padding:16px 18px;display:flex;flex-direction:column;gap:4px;
+    }
+    .kpi-lbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+    .kpi-val{font-family:'Oswald',sans-serif;font-size:32px;font-weight:700;line-height:1;color:#fff}
+    .kpi-val.ok{color:var(--ok)}
+    .kpi-val.warn{color:var(--warn)}
+    .kpi-val.bad{color:var(--bad)}
+    .kpi-sub{font-size:11px;color:var(--muted2)}
+
+    /* ── CHARTS ROW ── */
+    .charts{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:20px}
+    @media(max-width:860px){.charts{grid-template-columns:1fr}}
+    .chart-card{
+      background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;
+    }
+    .chart-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;
+      color:var(--muted);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+    .chart-title::after{content:'';flex:1;height:1px;background:var(--border)}
+    .chart-wrap{position:relative;height:220px}
+
+    /* ── CALIDAD BARS ── */
+    .calidad-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
+    .cal-row{display:flex;flex-direction:column;gap:3px}
+    .cal-lbl{font-size:10px;color:var(--muted);display:flex;justify-content:space-between}
+    .cal-bar-bg{height:6px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden}
+    .cal-bar{height:100%;border-radius:3px;transition:width .6s ease}
+    .cal-bar.ok{background:var(--ok)}
+    .cal-bar.warn{background:var(--warn)}
+    .cal-bar.bad{background:var(--bad)}
+
+    /* ── TABLE ── */
+    .table-card{
+      background:var(--card);border:1px solid var(--border);border-radius:14px;
+      overflow:hidden;margin-bottom:20px;
+    }
+    .table-head{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:14px 18px;border-bottom:1px solid var(--border);
+    }
+    .table-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+    .table-count{font-size:11px;font-weight:600;color:var(--blue);background:var(--blue-dim);
+      padding:3px 10px;border-radius:20px;border:1px solid rgba(96,165,250,.2)}
+    .tbl-wrap{overflow-x:auto}
+    table{width:100%;border-collapse:collapse}
+    th{
+      font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;
+      color:var(--muted);padding:10px 14px;text-align:left;border-bottom:1px solid var(--border);
+      white-space:nowrap;
+    }
+    td{padding:11px 14px;border-bottom:1px solid rgba(255,255,255,.04);font-size:13px;white-space:nowrap}
+    tr:last-child td{border-bottom:none}
+    tr:hover td{background:rgba(255,255,255,.02)}
+    .ar-ok{color:var(--ok);font-family:'Oswald',sans-serif;font-weight:700}
+    .ar-low{color:var(--bad);font-family:'Oswald',sans-serif;font-weight:700}
+    .ar-high{color:var(--warn);font-family:'Oswald',sans-serif;font-weight:700}
+    .plate{font-family:'Oswald',sans-serif;font-weight:600;letter-spacing:.1em;color:#93c5fd}
+    .badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+    .badge-ok{background:rgba(34,197,94,.15);color:#86efac;border:1px solid rgba(34,197,94,.25)}
+    .badge-warn{background:rgba(245,158,11,.15);color:#fde68a;border:1px solid rgba(245,158,11,.25)}
+    .badge-bad{background:rgba(239,68,68,.15);color:#fca5a5;border:1px solid rgba(239,68,68,.25)}
+    .author{font-size:11px;color:var(--muted2)}
+
+    /* ── EMPTY ── */
+    .empty{text-align:center;padding:60px 20px;color:var(--muted)}
+    .empty-icon{font-size:40px;display:block;margin-bottom:12px;opacity:.3}
+
+    /* ── FOOTER ── */
+    .footer{text-align:center;padding:20px;font-size:11px;color:var(--muted2)}
+  </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div>
+    <div class="topbar-logo">🌴 Potencial de Aceite</div>
+    <div class="topbar-sub">Dashboard de resultados — solo lectura</div>
+  </div>
+  <div class="live-dot">
+    <div id="dot"></div>
+    <span id="dot-txt">Conectando…</span>
+  </div>
+  <div class="last-update" id="last-update"></div>
+</div>
+
+<!-- FILTERS -->
+<div class="filters">
+  <label>Filtros</label>
+  <input class="f-input f-search" id="f-search" placeholder="Buscar placa o proveedor…" oninput="applyFilters()">
+  <input class="f-input f-date" id="f-desde" type="date" onchange="applyFilters()" title="Desde">
+  <input class="f-input f-date" id="f-hasta" type="date" onchange="applyFilters()" title="Hasta">
+  <select class="f-select" id="f-estado" onchange="applyFilters()">
+    <option value="">Todos los estados</option>
+    <option value="ok">✔ Normal</option>
+    <option value="low">▼ Bajo</option>
+    <option value="high">▲ Alto</option>
+  </select>
+  <button class="f-btn" onclick="resetFilters()">Limpiar</button>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- KPIs -->
+  <div class="kpis" id="kpis">
+    <div class="kpi"><div class="kpi-lbl">Registros</div><div class="kpi-val" id="k-total">—</div><div class="kpi-sub">en total</div></div>
+    <div class="kpi"><div class="kpi-lbl">AR Promedio</div><div class="kpi-val" id="k-avg">—</div><div class="kpi-sub">% potencial aceite</div></div>
+    <div class="kpi"><div class="kpi-lbl">AR Máximo</div><div class="kpi-val ok" id="k-max">—</div><div class="kpi-sub" id="k-max-sub"></div></div>
+    <div class="kpi"><div class="kpi-lbl">AR Mínimo</div><div class="kpi-val bad" id="k-min">—</div><div class="kpi-sub" id="k-min-sub"></div></div>
+    <div class="kpi"><div class="kpi-lbl">% en rango</div><div class="kpi-val ok" id="k-ok">—</div><div class="kpi-sub">dentro Cenipalma</div></div>
+    <div class="kpi"><div class="kpi-lbl">Placas únicas</div><div class="kpi-val" id="k-placas">—</div><div class="kpi-sub" id="k-provs"></div></div>
+  </div>
+
+  <!-- CHARTS -->
+  <div class="charts">
+    <div class="chart-card">
+      <div class="chart-title">AR % por registro (últimos 30)</div>
+      <div class="chart-wrap"><canvas id="chart-ar"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Calidad promedio</div>
+      <div id="calidad-bars" style="margin-top:8px">
+        <div class="empty"><span class="empty-icon">📊</span>Sin datos</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-card">
+    <div class="table-head">
+      <span class="table-title">Todos los registros</span>
+      <span class="table-count" id="tbl-count">0 registros</span>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>Fecha</th><th>Placa</th><th>Proveedor</th>
+          <th>Peso (kg)</th><th>AR %</th><th>FR %</th><th>MF %</th><th>HM %</th><th>AMF %</th>
+          <th>Estado</th><th>Calidad</th><th>Analista</th>
+        </tr></thead>
+        <tbody id="tbl-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="footer">
+    Datos en tiempo real desde Firebase · Solo lectura ·
+    <a href="potencial_aceite.html">Ir a la calculadora →</a>
+  </div>
+</div>
+
+<script>
+var _allData = [];
+var _filtered = [];
+var _chartAR  = null;
+
+window.render = function(data){
+  _allData = data || [];
+  document.getElementById('last-update').textContent =
+    'Actualizado ' + new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+  applyFilters();
+};
+
+function applyFilters(){
+  var search = (document.getElementById('f-search').value||'').trim().toUpperCase();
+  var desde  = document.getElementById('f-desde').value;
+  var hasta  = document.getElementById('f-hasta').value;
+  var estado = document.getElementById('f-estado').value;
+
+  _filtered = _allData.filter(function(r){
+    if(search && !(r.placa||'').includes(search) && !(r.proveedor||'').toUpperCase().includes(search)) return false;
+    if(desde && r.fecha < desde) return false;
+    if(hasta && r.fecha > hasta) return false;
+    if(estado && r.estado !== estado) return false;
+    return true;
+  });
+
+  renderKPIs(_filtered);
+  renderChart(_filtered);
+  renderCalidadBars(_filtered);
+  renderTable(_filtered);
+}
+
+function resetFilters(){
+  document.getElementById('f-search').value='';
+  document.getElementById('f-desde').value='';
+  document.getElementById('f-hasta').value='';
+  document.getElementById('f-estado').value='';
+  applyFilters();
+}
+
+function renderKPIs(data){
+  var n = data.length;
+  var ars = data.map(function(r){return r.ar}).filter(function(v){return!isNaN(v)&&v>0});
+  var avg = ars.length ? ars.reduce(function(a,b){return a+b},0)/ars.length : NaN;
+  var max = ars.length ? Math.max.apply(null,ars) : NaN;
+  var min = ars.length ? Math.min.apply(null,ars) : NaN;
+  var ok  = data.filter(function(r){return r.estado==='ok'}).length;
+  var pct = n > 0 ? Math.round(ok/n*100) : 0;
+  var maxR= data.find(function(r){return r.ar===max});
+  var minR= data.find(function(r){return r.ar===min});
+
+  setText('k-total', n);
+  setText('k-avg',  isNaN(avg)?'—':avg.toFixed(2)+'%');
+  setText('k-max',  isNaN(max)?'—':max.toFixed(2)+'%');
+  setText('k-min',  isNaN(min)?'—':min.toFixed(2)+'%');
+  setText('k-ok',   n?pct+'%':'—');
+  setText('k-placas', new Set(data.map(function(r){return r.placa})).size);
+  setText('k-provs', new Set(data.map(function(r){return r.proveedor})).size + ' proveedores');
+  setText('k-max-sub', maxR ? maxR.placa+' · '+maxR.fecha : '');
+  setText('k-min-sub', minR ? minR.placa+' · '+minR.fecha : '');
+
+  // Color avg
+  var avgEl = document.getElementById('k-avg');
+  if(avgEl) avgEl.className = 'kpi-val '+(isNaN(avg)?'':(avg<19?'bad':avg>30?'warn':'ok'));
+}
+
+function renderChart(data){
+  var slice = data.slice(0,30).reverse();
+  var labels = slice.map(function(r){return r.placa+(r.fecha?' '+r.fecha.slice(5):'')});
+  var vals   = slice.map(function(r){return parseFloat(r.ar.toFixed(2))});
+  var colors = slice.map(function(r){
+    return r.estado==='ok'?'rgba(34,197,94,.8)':r.estado==='low'?'rgba(239,68,68,.8)':'rgba(245,158,11,.8)';
+  });
+
+  if(_chartAR){_chartAR.destroy();_chartAR=null;}
+  var ctx = document.getElementById('chart-ar').getContext('2d');
+  _chartAR = new Chart(ctx,{
+    type:'bar',
+    data:{labels:labels, datasets:[{
+      label:'AR %',data:vals,backgroundColor:colors,
+      borderRadius:5,borderSkipped:false
+    }]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:function(c){return ' AR: '+c.raw+'%'}}}
+      },
+      scales:{
+        x:{ticks:{color:'rgba(255,255,255,.35)',font:{size:9},maxRotation:45},
+           grid:{color:'rgba(255,255,255,.04)'}},
+        y:{ticks:{color:'rgba(255,255,255,.35)',font:{size:10},callback:function(v){return v+'%'}},
+           grid:{color:'rgba(255,255,255,.06)'},
+           min: function(){
+             var mn = vals.length ? Math.min.apply(null,vals) : 0;
+             return Math.max(0, Math.floor(mn-5));
+           }()
+        }
+      }
+    }
+  });
+}
+
+function renderCalidadBars(data){
+  var el = document.getElementById('calidad-bars');
+  var withCal = data.filter(function(r){return r.calidad&&r.calidad.rff>0});
+  if(withCal.length===0){
+    el.innerHTML='<div class="empty"><span class="empty-icon">📊</span>Sin datos de calidad</div>';
+    return;
+  }
+
+  function avgPct(key){
+    var vals = withCal.map(function(r){return(r.calidad[key]||0)/r.calidad.rff*100});
+    return vals.reduce(function(a,b){return a+b},0)/vals.length;
+  }
+
+  var items = [
+    {lbl:'🟢 Verde', key:'verde', max:1},
+    {lbl:'🟠 Sobremaduro', key:'sobre', max:10},
+    {lbl:'🔴 Podrido', key:'podrido', max:0},
+    {lbl:'📏 Pedúnculo', key:'pedun', max:0},
+    {lbl:'🪲 Demotispa', key:'demo', max:0},
+    {lbl:'💔 Daño corona', key:'corona', max:0},
+  ];
+
+  el.innerHTML = '<div class="calidad-grid">'+
+    items.map(function(it){
+      var v = avgPct(it.key);
+      var cls = v > it.max ? 'bad' : v > 0 ? 'warn' : 'ok';
+      var barW = Math.min(100, it.max > 0 ? (v/it.max)*100 : (v>0?100:0));
+      return '<div class="cal-row">'+
+        '<div class="cal-lbl"><span>'+it.lbl+'</span><span>'+v.toFixed(2)+'%</span></div>'+
+        '<div class="cal-bar-bg"><div class="cal-bar '+cls+'" style="width:'+barW+'%"></div></div>'+
+      '</div>';
+    }).join('')+
+  '</div>';
+}
+
+function renderTable(data){
+  setText('tbl-count', data.length+' registro'+(data.length!==1?'s':''));
+  var tbody = document.getElementById('tbl-body');
+  if(data.length===0){
+    tbody.innerHTML='<tr><td colspan="12"><div class="empty"><span class="empty-icon">🔍</span>Sin registros</div></td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = data.map(function(r){
+    var arCls = r.estado==='ok'?'ar-ok':r.estado==='low'?'ar-low':'ar-high';
+    var estadoBadge = r.estado==='ok'
+      ? '<span class="badge badge-ok">✔ Normal</span>'
+      : r.estado==='low'
+        ? '<span class="badge badge-bad">▼ Bajo</span>'
+        : '<span class="badge badge-warn">▲ Alto</span>';
+
+    // calidad badge
+    var qBadge = '';
+    if(r.calidad && r.calidad.rff>0){
+      var pV=(r.calidad.verde||0)/r.calidad.rff*100;
+      var pS=(r.calidad.sobre||0)/r.calidad.rff*100;
+      var pP=(r.calidad.podrido||0)/r.calidad.rff*100;
+      if(pP>0) qBadge+='<span class="badge badge-bad">Podrido '+pP.toFixed(1)+'%</span> ';
+      if(pV>1) qBadge+='<span class="badge badge-warn">Verde '+pV.toFixed(1)+'%</span> ';
+      if(pS>10)qBadge+='<span class="badge badge-warn">S.Maduro '+pS.toFixed(1)+'%</span> ';
+      if(!qBadge) qBadge='<span class="badge badge-ok">OK</span>';
+    } else {
+      qBadge='<span style="color:rgba(255,255,255,.2)">—</span>';
+    }
+
+    var peso = r.pesoCarga>0 ? r.pesoCarga.toLocaleString('es-CO') : '—';
+    var fmt  = function(v,d){return(isNaN(v)||v<0)?'—':parseFloat(v).toFixed(d==null?1:d)+'%'};
+
+    return '<tr>'+
+      '<td>'+r.fecha+'</td>'+
+      '<td class="plate">'+r.placa+'</td>'+
+      '<td>'+(r.proveedor||'—')+'</td>'+
+      '<td>'+peso+'</td>'+
+      '<td class="'+arCls+'">'+parseFloat(r.ar).toFixed(2)+'%</td>'+
+      '<td>'+fmt(r.fr)+'</td>'+
+      '<td>'+fmt(r.mf)+'</td>'+
+      '<td>'+fmt(r.hm)+'</td>'+
+      '<td>'+fmt(r.amf,2)+'</td>'+
+      '<td>'+estadoBadge+'</td>'+
+      '<td>'+qBadge+'</td>'+
+      '<td class="author">'+(r.autorNombre||'').split(' ')[0]+'</td>'+
+    '</tr>';
+  }).join('');
+}
+
+function setText(id,v){var el=document.getElementById(id);if(el)el.textContent=v;}
+</script>
+</body>
+</html>
