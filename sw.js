@@ -1,19 +1,23 @@
-const CACHE = 'oleoflores-v1';
+const CACHE = 'oleoflores-v2';
+const BASE = '/potencial-aceite/';
 const ASSETS = [
-  './potencial_aceite.html',
-  './dashboard.html',
-  './manifest.json',
-  './jjpz.jpg'
+  BASE + 'potencial_aceite.html',
+  BASE + 'dashboard.html',
+  BASE + 'manifest.json',
+  BASE + 'jjpz.jpg'
 ];
 
-// Instalar: guarda los archivos principales en caché
 self.addEventListener('install', e => {
+  // Solo cachear si estamos en el dominio correcto
+  if (!self.location.hostname.includes('github.io')) {
+    self.skipWaiting();
+    return;
+  }
   e.waitUntil(
     caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting())
   );
 });
 
-// Activar: limpia cachés viejas
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys().then(keys =>
@@ -22,20 +26,20 @@ self.addEventListener('activate', e => {
   );
 });
 
-// Fetch: red primero, si falla usa caché (ideal para datos en tiempo real)
 self.addEventListener('fetch', e => {
-  // Firebase y APIs externas: siempre red, sin caché
+  // Solo actuar si estamos en GitHub Pages
+  if (!self.location.hostname.includes('github.io')) return;
+
   if (e.request.url.includes('firestore') ||
       e.request.url.includes('googleapis') ||
       e.request.url.includes('gstatic') ||
-      e.request.url.includes('cdn.jsdelivr')) {
+      e.request.url.includes('cdn.jsdelivr') ||
+      e.request.url.includes('fonts.googleapis')) {
     return;
   }
-
   e.respondWith(
     fetch(e.request)
       .then(res => {
-        // Guarda copia fresca en caché
         const copy = res.clone();
         caches.open(CACHE).then(c => c.put(e.request, copy));
         return res;
