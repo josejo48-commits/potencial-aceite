@@ -1,0 +1,40 @@
+{
+  "name": "Potencial de Aceite — Oleoflores",
+  "short_name": "Oleoflores",
+  "description": "Análisis de potencial de aceite en racimos de palma",
+  "start_url": "./potencial_aceite.html",
+  "display": "standalone",
+  "background_color": "#0a0f1e",
+  "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "jjpz.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "jjpz.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Nuevo Análisis",
+      "short_name": "Ingresar",
+      "description": "Ingresar nuevo registro de análisis",
+      "url": "./potencial_aceite.html"
+    },
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "Ver dashboard en tiempo real",
+      "url": "./dashboard.html"
+    }
+  ],
+  "categories": ["productivity", "utilities"],
+  "lang": "es-CO"
+}
