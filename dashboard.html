@@ -89,24 +89,24 @@ h1 em{color:#bfdbfe;font-style:normal}
 .stat-box .sv.ok{color:#15803d}
 .stat-box .sv.bad{color:#b91c1c}
 .stat-box .sv.warn{color:#b45309}
-.stat-box .sl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#9ca3af}
+.stat-box .sl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#374151}
 
 /* ── KPI CALIDAD (mismo estilo tarjeta oscura) ── */
 .cal-kpi-row{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:20px}
 .cal-kpi-card{background:#ffffff;border:1px solid var(--border);border-radius:14px;padding:16px 12px;text-align:center;animation:rise .4s ease both;box-shadow:0 1px 4px rgba(0,0,0,.06)}
 .cal-kpi-card .ck-emoji{font-size:14px;margin-bottom:2px;display:block}
-.cal-kpi-card .ck-label{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted2);margin-bottom:6px;display:block}
+.cal-kpi-card .ck-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#374151;margin-bottom:6px;display:block}
 .cal-kpi-card .ck-val{color:#15803d;font-family:'Oswald',sans-serif;font-size:26px;font-weight:700;line-height:1;margin-bottom:4px;color:#15803d}
 .cal-kpi-card .ck-val.warn{color:#b45309}
 .cal-kpi-card .ck-val.bad{color:#b91c1c}
-.cal-kpi-card .ck-max{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#9ca3af}
+.cal-kpi-card .ck-max{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#374151}
 
 /* CHART */
 .chart-card{background:#ffffff;border:1px solid var(--border);border-radius:16px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.06);animation:rise .4s ease both;margin-bottom:20px}
 .sdiv{display:flex;align-items:center;gap:10px;margin-bottom:14px}
 .sdiv span{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#1d4ed8}
 .sdiv::after{content:'';flex:1;height:1px;background:var(--border)}
-.chart-wrap{position:relative;height:260px}
+.chart-wrap{position:relative;height:320px}
 
 /* TABLE */
 .hist-card{background:#ffffff;border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06);animation:rise .5s ease both;margin-bottom:20px}
@@ -342,13 +342,56 @@ function renderChart(d){
   var ctx=document.getElementById('chart-ar').getContext('2d');
   _chart=new Chart(ctx,{
     type:'bar',
-    data:{labels:labels,datasets:[{label:'AR %',data:vals,backgroundColor:colors,borderRadius:6,borderSkipped:false,maxBarThickness:60}]},
+    data:{
+      labels:labels,
+      datasets:[{
+        label:'AR %',
+        data:vals,
+        backgroundColor:colors,
+        borderRadius:10,
+        borderSkipped:false,
+        maxBarThickness:52,
+        borderWidth:0,
+        hoverBorderWidth:2,
+        hoverBorderColor:'#1d4ed8'
+      }]
+    },
     options:{
-      responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return ' AR: '+c.raw+'%'}},backgroundColor:'rgba(15,22,40,.95)',borderColor:'rgba(96,165,250,.3)',borderWidth:1,titleColor:'#93c5fd',bodyColor:'#e2e8f0',padding:10}},
+      responsive:true,
+      maintainAspectRatio:false,
+      animation:{duration:700,easing:'easeOutQuart'},
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          callbacks:{
+            label:function(c){return '  AR: '+c.raw+'%'},
+            title:function(items){return '🚗 '+items[0].label}
+          },
+          backgroundColor:'#1e293b',
+          borderColor:'#2563eb',
+          borderWidth:1,
+          titleColor:'#93c5fd',
+          bodyColor:'#f1f5f9',
+          padding:12,
+          cornerRadius:8,
+          displayColors:false
+        },
+        datalabels:{
+          display:false
+        }
+      },
       scales:{
-        x:{ticks:{color:'rgba(0,0,0,.5)',font:{size:11,weight:'bold'},maxRotation:0,padding:8},grid:{display:false},border:{display:false}},
-        y:{ticks:{color:'rgba(255,255,255,.4)',font:{size:11},callback:function(v){return v+'%'}},grid:{color:'rgba(255,255,255,.06)'},border:{display:false},min:vals.length?Math.max(0,Math.floor(Math.min.apply(null,vals)-3)):0}
+        x:{
+          ticks:{color:'#374151',font:{size:11,weight:'600'},maxRotation:0,padding:10},
+          grid:{display:false},
+          border:{display:false}
+        },
+        y:{
+          ticks:{color:'#6b7280',font:{size:11},callback:function(v){return v+'%'},stepSize:2},
+          grid:{color:'rgba(0,0,0,.06)',lineWidth:1},
+          border:{display:false,dash:[4,4]},
+          min:vals.length?Math.max(0,Math.floor(Math.min.apply(null,vals)-3)):0
+        }
       }
     }
   });
