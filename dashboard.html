@@ -215,6 +215,11 @@ td.ar-high{color:#b45309;font-family:'Oswald',sans-serif;font-weight:700;font-si
     <div class="chart-wrap"><canvas id="chart-ar"></canvas></div>
   </div>
 
+  <div class="chart-card">
+    <div class="sdiv"><span>Tendencia AR% — área rellena</span></div>
+    <div class="chart-wrap" style="height:280px"><canvas id="chart-area" style="width:100%;height:100%"></canvas></div>
+  </div>
+
 
   <!-- HISTORIAL — igual que calculadora -->
   <div class="hist-card">
@@ -260,6 +265,7 @@ function applyFilters(){
   renderKPIPotencial(f);
   renderKPICalidad(f);
   renderChart(f);
+  renderAreaChart(f);
   renderTable(f);
 }
 
@@ -399,6 +405,112 @@ function renderChart(d){
 }
 
 /* ── TABLA — igual que calculadora ── */
+function renderAreaChart(d){
+  var canvas = document.getElementById('chart-area');
+  if(!canvas) return;
+  var sl = d.slice(0,30).reverse();
+  if(!sl.length) return;
+
+  var W = canvas.offsetWidth || 600;
+  var H = canvas.offsetHeight || 280;
+  canvas.width  = W * (window.devicePixelRatio||1);
+  canvas.height = H * (window.devicePixelRatio||1);
+  var ctx = canvas.getContext('2d');
+  ctx.scale(window.devicePixelRatio||1, window.devicePixelRatio||1);
+
+  var labels = sl.map(function(r){ return (r.placa||'').substring(0,7); });
+  var vals   = sl.map(function(r){ return parseFloat((r.ar||0).toFixed(2)); });
+  var states = sl.map(function(r){ return r.estado||'ok'; });
+  var avg    = parseFloat((vals.reduce(function(a,b){return a+b;},0)/vals.length).toFixed(1));
+  var minV   = Math.max(0, Math.floor(Math.min.apply(null,vals)-4));
+  var maxV   = Math.ceil(Math.max.apply(null,vals)+4);
+
+  var PAD_L=48, PAD_R=20, PAD_T=24, PAD_B=48;
+  var W2=W-PAD_L-PAD_R, H2=H-PAD_T-PAD_B;
+  var n=vals.length;
+
+  function toX(i){ return PAD_L + (i/(n-1||1))*W2; }
+  function toY(v){ return PAD_T + H2 - ((v-minV)/(maxV-minV||1))*H2; }
+
+  ctx.clearRect(0,0,W,H);
+
+  // grid lines
+  ctx.strokeStyle='rgba(0,0,0,.06)'; ctx.lineWidth=1;
+  var steps=5;
+  for(var s=0;s<=steps;s++){
+    var gv = minV + (maxV-minV)*s/steps;
+    var gy = toY(gv);
+    ctx.beginPath(); ctx.moveTo(PAD_L,gy); ctx.lineTo(PAD_L+W2,gy); ctx.stroke();
+    ctx.fillStyle='#9ca3af'; ctx.font='10px Arial'; ctx.textAlign='right';
+    ctx.fillText(gv.toFixed(0)+'%', PAD_L-6, gy+4);
+  }
+
+  // normal range band 19-30
+  var y19=toY(19), y30=toY(30);
+  ctx.fillStyle='rgba(21,128,61,.08)';
+  ctx.fillRect(PAD_L, y30, W2, y19-y30);
+  ctx.strokeStyle='rgba(21,128,61,.3)'; ctx.lineWidth=1;
+  ctx.setLineDash([4,3]);
+  ctx.beginPath(); ctx.moveTo(PAD_L,y19); ctx.lineTo(PAD_L+W2,y19); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(PAD_L,y30); ctx.lineTo(PAD_L+W2,y30); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // area fill
+  ctx.beginPath();
+  ctx.moveTo(toX(0), PAD_T+H2);
+  for(var i=0;i<n;i++){
+    var xi=toX(i), yi=toY(vals[i]);
+    if(i===0){ ctx.lineTo(xi,yi); }
+    else {
+      var px=toX(i-1), py=toY(vals[i-1]);
+      var cp1x=px+(xi-px)*0.5, cp2x=px+(xi-px)*0.5;
+      ctx.bezierCurveTo(cp1x,py,cp2x,yi,xi,yi);
+    }
+  }
+  ctx.lineTo(toX(n-1), PAD_T+H2);
+  ctx.closePath();
+  ctx.fillStyle='rgba(37,99,235,.07)';
+  ctx.fill();
+
+  // line
+  ctx.beginPath();
+  for(var i=0;i<n;i++){
+    var xi=toX(i), yi=toY(vals[i]);
+    if(i===0){ ctx.moveTo(xi,yi); }
+    else {
+      var px=toX(i-1), py=toY(vals[i-1]);
+      ctx.bezierCurveTo(px+(xi-px)*.5,py,px+(xi-px)*.5,yi,xi,yi);
+    }
+  }
+  ctx.strokeStyle='#2563eb'; ctx.lineWidth=2.5; ctx.stroke();
+
+  // average line
+  var yAvg=toY(avg);
+  ctx.strokeStyle='#e24b4a'; ctx.lineWidth=1.5;
+  ctx.setLineDash([5,4]);
+  ctx.beginPath(); ctx.moveTo(PAD_L,yAvg); ctx.lineTo(PAD_L+W2,yAvg); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle='#e24b4a'; ctx.font='bold 10px Arial'; ctx.textAlign='right';
+  ctx.fillText('Prom. '+avg+'%', PAD_L+W2, yAvg-5);
+
+  // points
+  for(var i=0;i<n;i++){
+    var xi=toX(i), yi=toY(vals[i]);
+    var col = states[i]==='ok'?'#15803d': states[i]==='low'?'#b91c1c':'#b45309';
+    ctx.beginPath(); ctx.arc(xi,yi,5,0,Math.PI*2);
+    ctx.fillStyle='#fff'; ctx.fill();
+    ctx.strokeStyle=col; ctx.lineWidth=2; ctx.stroke();
+  }
+
+  // x labels
+  ctx.fillStyle='#374151'; ctx.font='bold 9px Arial'; ctx.textAlign='center';
+  var step = Math.ceil(n/10);
+  for(var i=0;i<n;i+=step){
+    ctx.fillText(labels[i], toX(i), H-8);
+  }
+}
+
+
 function renderTable(d){
   setText('tbl-count', d.length+' registro'+(d.length!==1?'s':''));
   var tb=document.getElementById('tbl-body');
