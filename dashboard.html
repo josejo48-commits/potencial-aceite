@@ -215,10 +215,6 @@ td.ar-high{color:#b45309;font-family:'Oswald',sans-serif;font-weight:700;font-si
     <div class="chart-wrap"><canvas id="chart-ar"></canvas></div>
   </div>
 
-  <div class="chart-card">
-    <div class="sdiv"><span>Tendencia AR% — área rellena</span></div>
-    <div class="chart-wrap"><canvas id="chart-area" role="img" aria-label="Gráfica de área rellena mostrando la tendencia del AR% por placa"></canvas></div>
-  </div>
 
   <!-- HISTORIAL — igual que calculadora -->
   <div class="hist-card">
@@ -264,7 +260,6 @@ function applyFilters(){
   renderKPIPotencial(f);
   renderKPICalidad(f);
   renderChart(f);
-  renderAreaChart(f);
   renderTable(f);
 }
 
@@ -404,121 +399,6 @@ function renderChart(d){
 }
 
 /* ── TABLA — igual que calculadora ── */
-function renderAreaChart(d){
-  var canvas = document.getElementById('chart-area');
-  if(!canvas){ console.warn('chart-area canvas not found'); return; }
-  var sl = d.slice(0,30).reverse();
-  if(!sl.length){ return; }
-  var labels = sl.map(function(r){ return r.placa||''; });
-  var vals   = sl.map(function(r){ return parseFloat((r.ar||0).toFixed(2)); });
-  var ptColors = sl.map(function(r){
-    return r.estado==='ok'?'#15803d': r.estado==='low'?'#b91c1c':'#b45309';
-  });
-  var avg = parseFloat((vals.reduce(function(a,b){return a+b;},0)/vals.length).toFixed(1));
-  var minV = Math.max(0, Math.floor(Math.min.apply(null,vals)-4));
-  var maxV = Math.ceil(Math.max.apply(null,vals)+4);
-
-  if(_chartArea){ _chartArea.destroy(); _chartArea=null; }
-
-  var rangeBandPlugin = {
-    id:'rangeBand2',
-    beforeDraw: function(chart){
-      var ca=chart.chartArea, sc=chart.scales.y;
-      if(!ca||!sc) return;
-      var y1=sc.getPixelForValue(19);
-      var y2=sc.getPixelForValue(30);
-      chart.ctx.save();
-      chart.ctx.fillStyle='rgba(21,128,61,.08)';
-      chart.ctx.fillRect(ca.left, y2, ca.right-ca.left, y1-y2);
-      chart.ctx.strokeStyle='rgba(21,128,61,.35)';
-      chart.ctx.setLineDash([4,3]);
-      chart.ctx.lineWidth=1;
-      chart.ctx.beginPath(); chart.ctx.moveTo(ca.left,y1); chart.ctx.lineTo(ca.right,y1); chart.ctx.stroke();
-      chart.ctx.beginPath(); chart.ctx.moveTo(ca.left,y2); chart.ctx.lineTo(ca.right,y2); chart.ctx.stroke();
-      chart.ctx.setLineDash([]);
-      chart.ctx.restore();
-    }
-  };
-
-  var avgLinePlugin = {
-    id:'avgLine2',
-    afterDraw: function(chart){
-      var ca=chart.chartArea, sc=chart.scales.y;
-      if(!ca||!sc) return;
-      var yA=sc.getPixelForValue(avg);
-      chart.ctx.save();
-      chart.ctx.strokeStyle='#e24b4a';
-      chart.ctx.lineWidth=1.5;
-      chart.ctx.setLineDash([5,4]);
-      chart.ctx.beginPath(); chart.ctx.moveTo(ca.left,yA); chart.ctx.lineTo(ca.right,yA); chart.ctx.stroke();
-      chart.ctx.setLineDash([]);
-      chart.ctx.font='bold 10px Arial';
-      chart.ctx.fillStyle='#e24b4a';
-      chart.ctx.fillText('Prom. '+avg+'%', ca.right-72, yA-5);
-      chart.ctx.restore();
-    }
-  };
-
-  _chartArea = new Chart(canvas.getContext('2d'), {
-    type:'line',
-    data:{
-      labels: labels,
-      datasets:[{
-        label:'AR %',
-        data: vals,
-        borderColor:'#2563eb',
-        borderWidth: 2.5,
-        tension: 0.4,
-        fill: true,
-        backgroundColor:'rgba(37,99,235,.07)',
-        pointBackgroundColor: ptColors,
-        pointBorderColor:'#fff',
-        pointBorderWidth: 2,
-        pointRadius: 5,
-        pointHoverRadius: 7
-      }]
-    },
-    options:{
-      responsive:true,
-      maintainAspectRatio:false,
-      animation:{duration:600, easing:'easeOutQuart'},
-      plugins:{
-        legend:{display:false},
-        tooltip:{
-          displayColors:false,
-          padding:10,
-          cornerRadius:8,
-          backgroundColor:'#1e293b',
-          borderColor:'#2563eb',
-          borderWidth:1,
-          titleColor:'#93c5fd',
-          bodyColor:'#f1f5f9',
-          callbacks:{
-            title:function(items){ return items[0].label; },
-            label:function(c){ return 'AR: '+c.raw+'%'; }
-          }
-        }
-      },
-      scales:{
-        x:{
-          ticks:{color:'#374151', font:{size:10, weight:'600'}, maxRotation:0, padding:8},
-          grid:{display:false},
-          border:{display:false}
-        },
-        y:{
-          ticks:{color:'#6b7280', font:{size:10}, callback:function(v){return v+'%';}, stepSize:2},
-          grid:{color:'rgba(0,0,0,.05)'},
-          border:{display:false},
-          min: minV,
-          max: maxV
-        }
-      }
-    },
-    plugins:[rangeBandPlugin, avgLinePlugin]
-  });
-}
-
-
 function renderTable(d){
   setText('tbl-count', d.length+' registro'+(d.length!==1?'s':''));
   var tb=document.getElementById('tbl-body');
