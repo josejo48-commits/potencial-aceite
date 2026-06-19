@@ -245,7 +245,14 @@ td.ar-high{color:#b45309;font-family:'Oswald',sans-serif;font-weight:700;font-si
 var _all=[], _chart=null;
 
 window.render = function(data){
-  _all = data||[];
+  _all = (data||[]).sort(function(a,b){
+    var da = a.fecha||''; var db = b.fecha||'';
+    if(db > da) return 1;
+    if(db < da) return -1;
+    var ta = a.ts&&a.ts.seconds ? a.ts.seconds : 0;
+    var tb = b.ts&&b.ts.seconds ? b.ts.seconds : 0;
+    return tb - ta;
+  });
   applyFilters();
 };
 
