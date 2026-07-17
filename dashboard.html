@@ -201,6 +201,7 @@ td.ar-high{color:#b45309;font-family:'Oswald',sans-serif;font-weight:700;font-si
     <div class="stat-box"><div class="sv" id="k-total">—</div><div class="sl">Total registros</div></div>
     <div class="stat-box"><div class="sv ok" id="k-ok">—</div><div class="sl">% en rango</div></div>
     <div class="stat-box"><div class="sv" id="k-placas">—</div><div class="sl">Placas únicas</div></div>
+    <div class="stat-box"><div class="sv" id="k-fs">—</div><div class="sl">FS Promedio</div></div>
   </div>
 
   <!-- KPI CALIDAD FRUTA estilo Oleoflores -->
@@ -231,7 +232,7 @@ td.ar-high{color:#b45309;font-family:'Oswald',sans-serif;font-weight:700;font-si
       <table>
         <thead><tr>
           <th>Fecha</th><th>Placa</th><th>Proveedor</th><th>Peso carga</th>
-          <th>AR %</th><th>HM %</th><th>Calidad fruta</th><th>Analista</th>
+          <th>AR %</th><th>HM %</th><th>FS %</th><th>Calidad fruta</th><th>Analista</th>
         </tr></thead>
         <tbody id="tbl-body"></tbody>
       </table>
@@ -311,6 +312,13 @@ function renderKPIPotencial(d){
   setText('k-placas',new Set(d.map(function(r){return r.placa})).size);
   var avgEl=document.getElementById('k-avg');
   if(avgEl&&!isNaN(avg)) avgEl.className='sv '+(avg<19?'bad':avg>30?'warn':'ok');
+  var fss=d.map(function(r){return r.fs}).filter(function(v){return v!=null&&!isNaN(v)&&v>0});
+  var fsAvg=fss.length?fss.reduce(function(a,b){return a+b},0)/fss.length:NaN;
+  var fsEl=document.getElementById('k-fs');
+  if(fsEl){
+    fsEl.textContent=isNaN(fsAvg)?'—':fsAvg.toFixed(1)+'%';
+    if(!isNaN(fsAvg)) fsEl.className='sv '+(fsAvg>=55&&fsAvg<=81?'ok':fsAvg<55?'bad':'warn');
+  }
 }
 
 /* ── KPI CALIDAD — ESTILO OLEOFLORES ── */
@@ -522,7 +530,7 @@ function renderTable(d){
   setText('tbl-count', d.length+' registro'+(d.length!==1?'s':''));
   var tb=document.getElementById('tbl-body');
   if(!d.length){
-    tb.innerHTML='<tr><td colspan="8"><div class="hist-empty"><span class="hist-empty-icon">🔍</span>Sin registros</div></td></tr>';
+    tb.innerHTML='<tr><td colspan="9"><div class="hist-empty"><span class="hist-empty-icon">🔍</span>Sin registros</div></td></tr>';
     return;
   }
   tb.innerHTML=d.map(function(r,i){
@@ -565,6 +573,7 @@ function renderTable(d){
       '<td>'+peso+'</td>'+
       '<td class="'+arCls+'">'+parseFloat(r.ar).toFixed(2)+'%</td>'+
       '<td style="color:var(--muted)">'+(r.hm?r.hm.toFixed(1)+'%':'—')+'</td>'+
+      '<td>'+(r.fs!=null?('<span style="font-weight:700;font-size:13px;color:'+(r.fs>=55&&r.fs<=81?'#15803d':r.fs<55?'#b91c1c':'#b45309')+'">'+parseFloat(r.fs).toFixed(1)+'%</span>'):'<span style="color:#9ca3af;font-size:12px;font-style:italic">—</span>')+'</td>'+
       '<td>'+qBadge+'</td>'+
       '<td>'+autorHtml+'</td>'+
     '</tr>';

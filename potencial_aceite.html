@@ -958,6 +958,93 @@ td.date{color:rgba(255,255,255,.4);font-family:'JetBrains Mono',monospace;font-s
   </div>
 </div>
 
+
+<!-- PASO 5: FRUIT SET -->
+<div class="info-card" style="animation-delay:.25s">
+  <div class="step-header">
+    <div class="step-num green">5</div>
+    <div>
+      <div class="step-title">Fruit Set — FS</div>
+      <div class="step-sub">Eficiencia de polinización &bull; Conteo de frutos por categoría</div>
+    </div>
+  </div>
+  <div class="step-body">
+    <div class="step-obj">Mide la eficiencia de polinización del racimo: qué proporción de los frutos posibles se desarrollaron como frutos normales. Un FS bajo indica problemas de polinización.</div>
+
+    <div class="sdiv" style="margin-bottom:.75rem"><span>Procedimiento</span></div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:1.25rem">
+      <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)">
+        <div style="min-width:24px;height:24px;background:#2563eb;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0">1</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.85);line-height:1.55">Tome las <strong>raquilas después de retirar los frutos normales</strong> para el análisis de MF.</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)">
+        <div style="min-width:24px;height:24px;background:#2563eb;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0">2</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.85);line-height:1.55">Cuente los <strong style="color:#4ade80">frutos normales (FN)</strong> — naranja/rojo, con mesocarpio desarrollado.</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)">
+        <div style="min-width:24px;height:24px;background:#2563eb;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0">3</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.85);line-height:1.55">Cuente los <strong style="color:#fb923c">frutos partenocárpicos (FP)</strong> — negro/rojizo uniforme, sin almendra.</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)">
+        <div style="min-width:24px;height:24px;background:#2563eb;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0">4</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.85);line-height:1.55">Cuente los <strong style="color:#f87171">frutos abortados (FA)</strong> — blancos, pequeños y vacíos.</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0">
+        <div style="min-width:24px;height:24px;background:#2563eb;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0">5</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.85);line-height:1.55">Incluya los frutos sueltos de la bolsa de la muestra. Ingrese los conteos abajo.</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1.25rem">
+      <div style="background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.2);border-radius:8px;padding:10px;text-align:center">
+        <div style="font-size:18px;margin-bottom:3px">🟢</div>
+        <div style="font-size:11px;font-weight:700;color:#4ade80">NORMALES</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:3px">Naranja/rojo · Mesocarpio desarrollado</div>
+      </div>
+      <div style="background:rgba(251,146,60,.08);border:1px solid rgba(251,146,60,.2);border-radius:8px;padding:10px;text-align:center">
+        <div style="font-size:18px;margin-bottom:3px">🟠</div>
+        <div style="font-size:11px;font-weight:700;color:#fb923c">PARTENOCÁRPICOS</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:3px">Negro/rojizo · Sin almendra</div>
+      </div>
+      <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:10px;text-align:center">
+        <div style="font-size:18px;margin-bottom:3px">⚪</div>
+        <div style="font-size:11px;font-weight:700;color:#f87171">ABORTADOS</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:3px">Blancos · Pequeños y vacíos</div>
+      </div>
+    </div>
+
+    <div style="background:rgba(37,99,235,.1);border-left:3px solid #2563eb;border-radius:0 8px 8px 0;padding:10px 14px;font-size:13px;color:#93c5fd;margin-bottom:1.25rem">
+      <strong>Fórmula:</strong> FS = FN / (FN + FP + FA) × 100 &nbsp;·&nbsp; Rango normal: 55 – 81 % &nbsp;·&nbsp; Fuente: Cenipalma
+    </div>
+
+    <div class="fields">
+      <div class="field">
+        <label><em>FN</em>Frutos normales</label>
+        <input type="number" id="fs-fn" placeholder="Ej: 120" min="0" step="1" oninput="calcFS()">
+        <div class="hint">Conteo total de frutos normales</div>
+      </div>
+      <div class="field">
+        <label><em>FP</em>Frutos partenocárpicos</label>
+        <input type="number" id="fs-fp" placeholder="Ej: 30" min="0" step="1" oninput="calcFS()">
+        <div class="hint">Sin fecundar — color negro/rojizo</div>
+      </div>
+      <div class="field">
+        <label><em>FA</em>Frutos abortados</label>
+        <input type="number" id="fs-fa" placeholder="Ej: 15" min="0" step="1" oninput="calcFS()">
+        <div class="hint">Color blanco, pequeños y vacíos</div>
+      </div>
+    </div>
+
+    <div class="sdiv" style="margin-top:1rem"><span>Resultado Fruit Set</span></div>
+    <div class="metrics" id="fs-metrics">
+      <div class="metric"><div class="ml">FS — Fruit Set</div><div class="mv" id="fs-result">&mdash;</div><div class="mr">Rango: 55 – 81 %</div></div>
+      <div class="metric"><div class="ml">Total frutos</div><div class="mv" id="fs-total">&mdash;</div><div class="mr"></div></div>
+      <div class="metric"><div class="ml">% Partenocárpicos</div><div class="mv" id="fs-pfp">&mdash;</div><div class="mr"></div></div>
+      <div class="metric"><div class="ml">% Abortados</div><div class="mv" id="fs-pfa">&mdash;</div><div class="mr"></div></div>
+    </div>
+  </div>
+</div>
+
 <!-- RESULTADO FINAL -->
 <div class="result-card">
   <div class="result-top">
@@ -2464,7 +2551,7 @@ function autoFillProveedor(){
 }
 
 // ── MAIN CALC ──
-var _lastAR=NaN, _lastFR=NaN, _lastMF=NaN, _lastHM=NaN, _lastAMF=NaN;
+var _lastAR=NaN, _lastFR=NaN, _lastMF=NaN, _lastHM=NaN, _lastAMF=NaN, _lastFS=NaN;
 var _debTimer=null;
 function calcDebounced(){clearTimeout(_debTimer);_debTimer=setTimeout(calc,120);}
 
@@ -2580,6 +2667,34 @@ function calcCalidad(){
 }
 
 // ── GUARDAR ──
+
+function calcFS(){
+  var fn=getVal('fs-fn'), fp=getVal('fs-fp'), fa=getVal('fs-fa');
+  var total=fn+fp+fa;
+  _lastFS = total>0?(fn/total)*100:NaN;
+  var bg_ok='linear-gradient(90deg,rgba(21,128,61,.12),transparent)';
+  var bg_bad='linear-gradient(90deg,rgba(220,38,38,.12),transparent)';
+  var bg_warn='linear-gradient(90deg,rgba(217,119,6,.12),transparent)';
+  var el=document.getElementById('fs-result');
+  var tot=document.getElementById('fs-total');
+  var pfp=document.getElementById('fs-pfp');
+  var pfa=document.getElementById('fs-pfa');
+  if(total>0){
+    var fs=_lastFS;
+    var pp=(fp/total)*100, pa=(fa/total)*100;
+    if(el){
+      el.textContent=fs.toFixed(1)+' %';
+      el.style.color=fs>=55&&fs<=81?'#4ade80':fs<55?'#f87171':'#fbbf24';
+      el.parentElement.style.background=fs>=55&&fs<=81?bg_ok:fs<55?bg_bad:bg_warn;
+    }
+    if(tot) tot.textContent=total+' frutos';
+    if(pfp) pfp.textContent=pp.toFixed(1)+' %';
+    if(pfa) pfa.textContent=pa.toFixed(1)+' %';
+  } else {
+    [el,tot,pfp,pfa].forEach(function(e){if(e)e.textContent='—';});
+  }
+}
+
 function guardarRegistro(){
   var fb = window._fb;
   var user = { uid: 'anonimo', displayName: 'Analista', email: '', photoURL: '' };
@@ -2625,6 +2740,10 @@ function guardarRegistro(){
       r5:getVal('q-r5'),
       b7:getVal('q-b7')
     },
+    fs:isNaN(_lastFS)?null:parseFloat(_lastFS.toFixed(2)),
+    fn:getVal('fs-fn'),
+    fp:getVal('fs-fp'),
+    fa:getVal('fs-fa'),
     inputs:{
       praq:getVal('praq'),pfn:getVal('pfn'),
       pfm:getVal('pfm'),pnf:getVal('pnf'),pcs:getVal('pcs'),
