@@ -2669,7 +2669,9 @@ function calcCalidad(){
 // ── GUARDAR ──
 
 function calcFS(){
-  var fn=getVal('fs-fn'), fp=getVal('fs-fp'), fa=getVal('fs-fa');
+  var fn=parseFloat(document.getElementById('fs-fn').value)||0;
+  var fp=parseFloat(document.getElementById('fs-fp').value)||0;
+  var fa=parseFloat(document.getElementById('fs-fa').value)||0;
   var total=fn+fp+fa;
   _lastFS = total>0?(fn/total)*100:NaN;
   var bg_ok='linear-gradient(90deg,rgba(21,128,61,.12),transparent)';
