@@ -2709,6 +2709,10 @@ function guardarRegistro(){
     autorNombre: user.displayName||'',
     autorEmail: user.email||'',
     autorFoto: user.photoURL||'',
+    fs: (function(){ var fn=parseFloat(document.getElementById('em-fs-fn').value)||0; var fp=parseFloat(document.getElementById('em-fs-fp').value)||0; var fa=parseFloat(document.getElementById('em-fs-fa').value)||0; var t=fn+fp+fa; return t>0?parseFloat(((fn/t)*100).toFixed(2)):null; })(),
+    fn: parseFloat(document.getElementById('em-fs-fn').value)||0,
+    fp: parseFloat(document.getElementById('em-fs-fp').value)||0,
+    fa: parseFloat(document.getElementById('em-fs-fa').value)||0,
     calidad:{
       rff:rff,
       verde:getVal('q-verde'),
@@ -3114,6 +3118,34 @@ function toggleStep(hdr) {
 // ══ MODAL EDICIÓN ══
 var _editId = null;
 
+function recalcEditFS(){
+  var fn = parseFloat(document.getElementById('em-fs-fn').value)||0;
+  var fp = parseFloat(document.getElementById('em-fs-fp').value)||0;
+  var fa = parseFloat(document.getElementById('em-fs-fa').value)||0;
+  var total = fn+fp+fa;
+  var fsBox = document.getElementById('em-fs-box');
+  var fsVal = document.getElementById('em-fs-val');
+  var fpVal = document.getElementById('em-fp-val');
+  var faVal = document.getElementById('em-fa-val');
+  if(total>0){
+    var fs=(fn/total)*100;
+    var pfp=(fp/total)*100;
+    var pfa=(fa/total)*100;
+    if(fsVal) fsVal.textContent=fs.toFixed(1)+'%';
+    if(fpVal) fpVal.textContent=pfp.toFixed(1)+'%';
+    if(faVal) faVal.textContent=pfa.toFixed(1)+'%';
+    if(fsBox){
+      fsBox.className='em-res-box '+(fs>=55&&fs<=81?'er-ok':fs<55?'er-bad':'er-warn');
+    }
+  } else {
+    if(fsVal) fsVal.textContent='—';
+    if(fpVal) fpVal.textContent='—';
+    if(faVal) faVal.textContent='—';
+    if(fsBox) fsBox.className='em-res-box';
+  }
+}
+
+
 function openEditModal(docId,id){
   var hist = getHistorial();
   var r = hist.find(function(x){return x._docId===docId||(x.id===id&&!docId)});
@@ -3148,6 +3180,11 @@ function openEditModal(docId,id){
     if(el) el.value = cal[k]||0;
   });
 
+  // Fruit Set
+  document.getElementById('em-fs-fn').value = r.fn||0;
+  document.getElementById('em-fs-fp').value = r.fp||0;
+  document.getElementById('em-fs-fa').value = r.fa||0;
+  recalcEditFS();
   recalcEdit();
   recalcEditCalidad();
   document.getElementById('edit-modal').classList.add('open');
@@ -3412,3 +3449,47 @@ document.addEventListener('keydown',function(e){
 
 </body>
 </html>
+      <!-- FRUIT SET SECTION -->
+      <div class="em-section">Fruit Set — FS</div>
+      <div class="em-grid-3" style="margin-bottom:10px">
+        <div class="em-field">
+          <label>🟢 Frutos normales (FN)</label>
+          <div class="em-counter">
+            <button onclick="emStep('em-fs-fn',-1)">−</button>
+            <input type="number" id="em-fs-fn" value="0" min="0" oninput="recalcEditFS()">
+            <button onclick="emStep('em-fs-fn',1)">+</button>
+          </div>
+        </div>
+        <div class="em-field">
+          <label>🟠 Partenocárpicos (FP)</label>
+          <div class="em-counter">
+            <button onclick="emStep('em-fs-fp',-1)">−</button>
+            <input type="number" id="em-fs-fp" value="0" min="0" oninput="recalcEditFS()">
+            <button onclick="emStep('em-fs-fp',1)">+</button>
+          </div>
+        </div>
+        <div class="em-field">
+          <label>⚪ Abortados (FA)</label>
+          <div class="em-counter">
+            <button onclick="emStep('em-fs-fa',-1)">−</button>
+            <input type="number" id="em-fs-fa" value="0" min="0" oninput="recalcEditFS()">
+            <button onclick="emStep('em-fs-fa',1)">+</button>
+          </div>
+        </div>
+      </div>
+      <div class="em-results" style="grid-template-columns:repeat(3,1fr);margin-bottom:10px">
+        <div class="em-res-box" id="em-fs-box">
+          <div class="er-lbl">FS — Fruit Set</div>
+          <div class="er-val" id="em-fs-val">—</div>
+        </div>
+        <div class="em-res-box">
+          <div class="er-lbl">% Partenocárpicos</div>
+          <div class="er-val" id="em-fp-val">—</div>
+        </div>
+        <div class="em-res-box">
+          <div class="er-lbl">% Abortados</div>
+          <div class="er-val" id="em-fa-val">—</div>
+        </div>
+      </div>
+
+
