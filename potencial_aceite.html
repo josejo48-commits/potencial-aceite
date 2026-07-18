@@ -969,54 +969,34 @@ td.date{color:rgba(255,255,255,.4);font-family:'JetBrains Mono',monospace;font-s
     </div>
   </div>
   <div class="step-body">
-    <div class="step-obj">Mide la eficiencia de polinización del racimo: qué proporción de los frutos posibles se desarrollaron como frutos normales. Un FS bajo indica problemas de polinización.</div>
+    <div class="step-obj">Mide la eficiencia de polinización: qué proporción de los frutos posibles se desarrollaron como frutos normales. Un FS bajo indica problemas de polinización.</div>
 
-    <div class="sdiv" style="margin-bottom:.75rem"><span>Procedimiento</span></div>
-    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:1.25rem">
-      <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)">
-        <div style="min-width:24px;height:24px;background:#2563eb;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0">1</div>
-        <div style="font-size:13px;color:rgba(255,255,255,.85);line-height:1.55">Tome las <strong>raquilas después de retirar los frutos normales</strong> para el análisis de MF.</div>
+    <!-- TIPOS DE FRUTOS -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:1rem 0 1.25rem">
+      <div style="background:#e8f5ee;border:2px solid #2d8a52;border-radius:10px;padding:14px;text-align:center">
+        <div style="font-size:22px;margin-bottom:4px">🟢</div>
+        <div style="font-size:13px;font-weight:700;color:#1a6b3a;margin-bottom:4px">NORMALES (FN)</div>
+        <div style="font-size:11px;color:#2d8a52;line-height:1.4">Naranja/rojo<br>Mesocarpio desarrollado</div>
       </div>
-      <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)">
-        <div style="min-width:24px;height:24px;background:#2563eb;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0">2</div>
-        <div style="font-size:13px;color:rgba(255,255,255,.85);line-height:1.55">Cuente los <strong style="color:#4ade80">frutos normales (FN)</strong> — naranja/rojo, con mesocarpio desarrollado.</div>
+      <div style="background:#fef3e6;border:2px solid #e07820;border-radius:10px;padding:14px;text-align:center">
+        <div style="font-size:22px;margin-bottom:4px">🟠</div>
+        <div style="font-size:13px;font-weight:700;color:#c05a00;margin-bottom:4px">PARTENOCÁRPICOS (FP)</div>
+        <div style="font-size:11px;color:#e07820;line-height:1.4">Negro/rojizo uniforme<br>Sin almendra</div>
       </div>
-      <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)">
-        <div style="min-width:24px;height:24px;background:#2563eb;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0">3</div>
-        <div style="font-size:13px;color:rgba(255,255,255,.85);line-height:1.55">Cuente los <strong style="color:#fb923c">frutos partenocárpicos (FP)</strong> — negro/rojizo uniforme, sin almendra.</div>
-      </div>
-      <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)">
-        <div style="min-width:24px;height:24px;background:#2563eb;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0">4</div>
-        <div style="font-size:13px;color:rgba(255,255,255,.85);line-height:1.55">Cuente los <strong style="color:#f87171">frutos abortados (FA)</strong> — blancos, pequeños y vacíos.</div>
-      </div>
-      <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0">
-        <div style="min-width:24px;height:24px;background:#2563eb;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0">5</div>
-        <div style="font-size:13px;color:rgba(255,255,255,.85);line-height:1.55">Incluya los frutos sueltos de la bolsa de la muestra. Ingrese los conteos abajo.</div>
+      <div style="background:#fdf0ef;border:2px solid #c0392b;border-radius:10px;padding:14px;text-align:center">
+        <div style="font-size:22px;margin-bottom:4px">⚪</div>
+        <div style="font-size:13px;font-weight:700;color:#922b21;margin-bottom:4px">ABORTADOS (FA)</div>
+        <div style="font-size:11px;color:#c0392b;line-height:1.4">Blancos, pequeños<br>y vacíos</div>
       </div>
     </div>
 
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1.25rem">
-      <div style="background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.2);border-radius:8px;padding:10px;text-align:center">
-        <div style="font-size:18px;margin-bottom:3px">🟢</div>
-        <div style="font-size:11px;font-weight:700;color:#4ade80">NORMALES</div>
-        <div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:3px">Naranja/rojo · Mesocarpio desarrollado</div>
-      </div>
-      <div style="background:rgba(251,146,60,.08);border:1px solid rgba(251,146,60,.2);border-radius:8px;padding:10px;text-align:center">
-        <div style="font-size:18px;margin-bottom:3px">🟠</div>
-        <div style="font-size:11px;font-weight:700;color:#fb923c">PARTENOCÁRPICOS</div>
-        <div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:3px">Negro/rojizo · Sin almendra</div>
-      </div>
-      <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:10px;text-align:center">
-        <div style="font-size:18px;margin-bottom:3px">⚪</div>
-        <div style="font-size:11px;font-weight:700;color:#f87171">ABORTADOS</div>
-        <div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:3px">Blancos · Pequeños y vacíos</div>
-      </div>
+    <!-- FÓRMULA -->
+    <div style="background:#e8f0fb;border-left:4px solid #1a5ea8;border-radius:0 8px 8px 0;padding:12px 16px;margin-bottom:1.25rem;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <div style="font-size:15px;font-weight:700;color:#1a3a6b;font-family:monospace">FS = FN / (FN + FP + FA) × 100</div>
+      <div style="font-size:11px;color:#555;border-left:1px solid #b0cef0;padding-left:12px">Rango normal: <strong>55 – 81%</strong> &nbsp;·&nbsp; Fuente: Cenipalma</div>
     </div>
 
-    <div style="background:rgba(37,99,235,.1);border-left:3px solid #2563eb;border-radius:0 8px 8px 0;padding:10px 14px;font-size:13px;color:#93c5fd;margin-bottom:1.25rem">
-      <strong>Fórmula:</strong> FS = FN / (FN + FP + FA) × 100 &nbsp;·&nbsp; Rango normal: 55 – 81 % &nbsp;·&nbsp; Fuente: Cenipalma
-    </div>
-
+    <!-- INPUTS -->
     <div class="fields">
       <div class="field">
         <label><em>FN</em>Frutos normales</label>
@@ -1026,19 +1006,19 @@ td.date{color:rgba(255,255,255,.4);font-family:'JetBrains Mono',monospace;font-s
       <div class="field">
         <label><em>FP</em>Frutos partenocárpicos</label>
         <input type="number" id="fs-fp" placeholder="Ej: 30" min="0" step="1" oninput="calcFS()">
-        <div class="hint">Sin fecundar — color negro/rojizo</div>
+        <div class="hint">Sin fecundar — negro/rojizo uniforme</div>
       </div>
       <div class="field">
         <label><em>FA</em>Frutos abortados</label>
         <input type="number" id="fs-fa" placeholder="Ej: 15" min="0" step="1" oninput="calcFS()">
-        <div class="hint">Color blanco, pequeños y vacíos</div>
+        <div class="hint">Blancos, pequeños y vacíos</div>
       </div>
     </div>
 
     <div class="sdiv" style="margin-top:1rem"><span>Resultado Fruit Set</span></div>
     <div class="metrics" id="fs-metrics">
       <div class="metric"><div class="ml">FS — Fruit Set</div><div class="mv" id="fs-result">&mdash;</div><div class="mr">Rango: 55 – 81 %</div></div>
-      <div class="metric"><div class="ml">Total frutos</div><div class="mv" id="fs-total">&mdash;</div><div class="mr"></div></div>
+      <div class="metric"><div class="ml">Total frutos contados</div><div class="mv" id="fs-total">&mdash;</div><div class="mr"></div></div>
       <div class="metric"><div class="ml">% Partenocárpicos</div><div class="mv" id="fs-pfp">&mdash;</div><div class="mr"></div></div>
       <div class="metric"><div class="ml">% Abortados</div><div class="mv" id="fs-pfa">&mdash;</div><div class="mr"></div></div>
     </div>
