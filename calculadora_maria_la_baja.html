@@ -603,6 +603,7 @@ td.date{color:rgba(255,255,255,.4);font-family:'JetBrains Mono',monospace;font-s
 
     // ── Auto-start historial (no login required) ──
     window._currentUser = null;
+    window._EXTRACTORA = 'Maria La Baja';
     suscribirHistorial();
   </script>
 </head>
@@ -2682,7 +2683,6 @@ function calcFS(){
 function guardarRegistro(){
   var fb = window._fb;
   var user = { uid: 'anonimo', displayName: 'Analista', email: '', photoURL: '' };
-  window._EXTRACTORA = 'Maria La Baja';
   if(!fb){ alert('Firebase no disponible.'); return; }
 
   var placa=document.getElementById('placa').value.trim().toUpperCase();
