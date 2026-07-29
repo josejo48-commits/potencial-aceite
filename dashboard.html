@@ -218,6 +218,7 @@ td.ar-high{color:#b45309;font-family:'Oswald',sans-serif;font-weight:700;font-si
     <div class="stat-box"><div class="sv ok" id="k-ok">—</div><div class="sl">% en rango</div></div>
     <div class="stat-box"><div class="sv" id="k-placas">—</div><div class="sl">Placas únicas</div></div>
     <div class="stat-box"><div class="sv" id="k-fs">—</div><div class="sl">FS Promedio</div></div>
+    <div class="stat-box"><div class="sv" id="k-tea">—</div><div class="sl">TEA Promedio</div></div>
   </div>
 
   <!-- KPI CALIDAD FRUTA estilo Oleoflores -->
@@ -249,6 +250,18 @@ td.ar-high{color:#b45309;font-family:'Oswald',sans-serif;font-weight:700;font-si
     <div class="chart-wrap" style="height:260px"><canvas id="chart-comparativa"></canvas></div>
   </div>
 
+  <!-- COMPARATIVA FS POR EXTRACTORA -->
+  <div class="chart-card" style="margin-bottom:20px">
+    <div class="sdiv"><span>🌿 Comparativa Fruit Set % por Extractora</span></div>
+    <div class="chart-wrap" style="height:260px"><canvas id="chart-comp-fs"></canvas></div>
+  </div>
+
+  <!-- COMPARATIVA TEA POR EXTRACTORA -->
+  <div class="chart-card" style="margin-bottom:20px">
+    <div class="sdiv"><span>🛢️ Comparativa TEA % por Extractora</span></div>
+    <div class="chart-wrap" style="height:260px"><canvas id="chart-comp-tea"></canvas></div>
+  </div>
+
   <!-- HISTORIAL — igual que calculadora -->
   <div class="hist-card">
     <div class="hist-head">
@@ -259,7 +272,7 @@ td.ar-high{color:#b45309;font-family:'Oswald',sans-serif;font-weight:700;font-si
       <table>
         <thead><tr>
           <th>Fecha</th><th>Placa</th><th>Proveedor</th><th>Peso carga</th>
-          <th>AR %</th><th>HM %</th><th>FS %</th><th>Calidad fruta</th><th>Analista</th>
+          <th>AR %</th><th>HM %</th><th>FS %</th><th>TEA %</th><th>Calidad fruta</th><th>Analista</th>
         </tr></thead>
         <tbody id="tbl-body"></tbody>
       </table>
@@ -306,7 +319,9 @@ function applyFilters(){
   renderChart(f);
   renderAreaChart(f);
   renderFSChart(f);
-  renderComparativa(_all);
+  renderComparativa(f);
+  renderCompFS(f);
+  renderCompTEA(f);
   renderTable(f);
 }
 
@@ -354,6 +369,9 @@ function renderKPIPotencial(d){
     fsEl.textContent=isNaN(fsAvg)?'—':fsAvg.toFixed(1)+'%';
     if(!isNaN(fsAvg)) fsEl.className='sv '+(fsAvg>=55&&fsAvg<=81?'ok':fsAvg<55?'bad':'warn');
   }
+  var teas=d.map(function(r){return r.tea}).filter(function(v){return v!=null&&!isNaN(v)&&v>0});
+  var teaAvg=teas.length?teas.reduce(function(a,b){return a+b},0)/teas.length:NaN;
+  setText('k-tea', isNaN(teaAvg)?'—':teaAvg.toFixed(2)+'%');
 }
 
 /* ── KPI CALIDAD — ESTILO OLEOFLORES ── */
@@ -740,7 +758,7 @@ function renderFSChart(d){
 }
 
 
-var _chartComp = null;
+var _chartComp=null, _chartCompFS=null, _chartCompTEA=null;
 function renderComparativa(allData){
   var extractoras = ['Codazzi','Maria La Baja','Sinu','Tibu'];
   var colors = ['#2563eb','#16a34a','#ea580c','#7c3aed'];
@@ -804,6 +822,64 @@ function renderComparativa(allData){
   });
 }
 
+function renderCompFS(d){
+  var extractoras=['Codazzi','Maria La Baja','Sinu','Tibu'];
+  var colors=['#2563eb','#16a34a','#ea580c','#7c3aed'];
+  var months={};
+  d.forEach(function(r){
+    if(!r.fecha||r.fs==null||isNaN(r.fs)) return;
+    var m=r.fecha.slice(0,7);
+    if(!months[m]) months[m]={};
+    var ex=r.extractora||'Sin extractora';
+    if(!months[m][ex]) months[m][ex]=[];
+    months[m][ex].push(r.fs);
+  });
+  var labels=Object.keys(months).sort();
+  var datasets=extractoras.map(function(ex,i){
+    return{label:ex,data:labels.map(function(m){
+      var v=months[m]&&months[m][ex];
+      return v&&v.length?parseFloat((v.reduce(function(a,b){return a+b},0)/v.length).toFixed(2)):null;
+    }),borderColor:colors[i],backgroundColor:colors[i].replace(')',',0.1)').replace('rgb','rgba'),
+    borderWidth:2,pointRadius:5,tension:0.3,fill:false,spanGaps:true};
+  });
+  if(_chartCompFS){_chartCompFS.destroy();_chartCompFS=null;}
+  var ctx=document.getElementById('chart-comp-fs');
+  if(!ctx||!labels.length) return;
+  _chartCompFS=new Chart(ctx.getContext('2d'),{type:'line',data:{labels:labels,datasets:datasets},
+    options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:'top'},tooltip:{callbacks:{label:function(c){return ' '+c.dataset.label+': '+c.raw+'%'}}}},
+    scales:{x:{grid:{color:'rgba(0,0,0,.06)'}},y:{ticks:{callback:function(v){return v+'%'}},grid:{color:'rgba(0,0,0,.06)'},min:40,max:100}}}});
+}
+
+function renderCompTEA(d){
+  var extractoras=['Codazzi','Maria La Baja','Sinu','Tibu'];
+  var colors=['#2563eb','#16a34a','#ea580c','#7c3aed'];
+  var months={};
+  d.forEach(function(r){
+    if(!r.fecha||r.tea==null||isNaN(r.tea)) return;
+    var m=r.fecha.slice(0,7);
+    if(!months[m]) months[m]={};
+    var ex=r.extractora||'Sin extractora';
+    if(!months[m][ex]) months[m][ex]=[];
+    months[m][ex].push(r.tea);
+  });
+  var labels=Object.keys(months).sort();
+  var datasets=extractoras.map(function(ex,i){
+    return{label:ex,data:labels.map(function(m){
+      var v=months[m]&&months[m][ex];
+      return v&&v.length?parseFloat((v.reduce(function(a,b){return a+b},0)/v.length).toFixed(2)):null;
+    }),borderColor:colors[i],backgroundColor:colors[i].replace(')',',0.1)').replace('rgb','rgba'),
+    borderWidth:2,pointRadius:5,tension:0.3,fill:false,spanGaps:true};
+  });
+  if(_chartCompTEA){_chartCompTEA.destroy();_chartCompTEA=null;}
+  var ctx=document.getElementById('chart-comp-tea');
+  if(!ctx||!labels.length) return;
+  _chartCompTEA=new Chart(ctx.getContext('2d'),{type:'line',data:{labels:labels,datasets:datasets},
+    options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:'top'},tooltip:{callbacks:{label:function(c){return ' '+c.dataset.label+': '+c.raw+'%'}}}},
+    scales:{x:{grid:{color:'rgba(0,0,0,.06)'}},y:{ticks:{callback:function(v){return v+'%'}},grid:{color:'rgba(0,0,0,.06)'},min:15}}}});
+}
+
 function renderTable(d){
   setText('tbl-count', d.length+' registro'+(d.length!==1?'s':''));
   var tb=document.getElementById('tbl-body');
@@ -852,6 +928,7 @@ function renderTable(d){
       '<td>'+peso+'</td>'+
       '<td class="'+arCls+'">'+parseFloat(r.ar).toFixed(2)+'%</td>'+
       '<td style="color:var(--muted)">'+(r.hm?r.hm.toFixed(1)+'%':'—')+'</td>'+
+      '<td>'+(r.tea!=null?('<span style="font-weight:700;font-size:13px;color:#1d4ed8">'+parseFloat(r.tea).toFixed(2)+'%</span>'):'<span style="color:#9ca3af;font-size:12px">—</span>')+'</td>'+
       '<td>'+(r.fs!=null?('<span style="font-weight:700;font-size:13px;color:'+(r.fs>=55&&r.fs<=81?'#15803d':r.fs<55?'#b91c1c':'#b45309')+'">'+parseFloat(r.fs).toFixed(1)+'%</span>'):'<span style="color:#9ca3af;font-size:12px">—</span>')+'</td>'+
       '<td>'+qBadge+'</td>'+
       '<td>'+autorHtml+'</td>'+
