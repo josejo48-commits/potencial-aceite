@@ -178,9 +178,25 @@ td.ar-high{color:#b45309;font-family:'Oswald',sans-serif;font-weight:700;font-si
 <!-- FILTERS -->
 <div class="filters">
   <span class="f-lbl">Filtrar</span>
-  <input class="f-input" id="f-search" placeholder="Buscar placa o proveedor…" style="width:200px" oninput="applyFilters()">
-  <input class="f-input" id="f-desde" type="date" onchange="applyFilters()" style="width:145px">
-  <input class="f-input" id="f-hasta" type="date" onchange="applyFilters()" style="width:145px">
+  <input class="f-input" id="f-search" placeholder="Buscar placa o proveedor…" style="width:180px" oninput="applyFilters()">
+  <select class="f-select" id="f-extractora" onchange="applyFilters()">
+    <option value="">Todas las extractoras</option>
+    <option value="Codazzi">Codazzi</option>
+    <option value="Maria La Baja">María la Baja</option>
+    <option value="Sinu">Sinú</option>
+    <option value="Tibu">Tibú</option>
+  </select>
+  <select class="f-select" id="f-mes" onchange="applyFilters()">
+    <option value="">Todos los meses</option>
+    <option value="01">Enero</option><option value="02">Febrero</option>
+    <option value="03">Marzo</option><option value="04">Abril</option>
+    <option value="05">Mayo</option><option value="06">Junio</option>
+    <option value="07">Julio</option><option value="08">Agosto</option>
+    <option value="09">Septiembre</option><option value="10">Octubre</option>
+    <option value="11">Noviembre</option><option value="12">Diciembre</option>
+  </select>
+  <input class="f-input" id="f-desde" type="date" onchange="applyFilters()" style="width:140px">
+  <input class="f-input" id="f-hasta" type="date" onchange="applyFilters()" style="width:140px">
   <select class="f-select" id="f-estado" onchange="applyFilters()">
     <option value="">Todos los estados</option>
     <option value="ok">✔ Normal</option>
@@ -227,6 +243,12 @@ td.ar-high{color:#b45309;font-family:'Oswald',sans-serif;font-weight:700;font-si
   </div>
 
 
+  <!-- GRÁFICA COMPARATIVA POR EXTRACTORA -->
+  <div class="chart-card" style="margin-bottom:20px">
+    <div class="sdiv"><span>📊 Comparativa AR % por Extractora</span></div>
+    <div class="chart-wrap" style="height:260px"><canvas id="chart-comparativa"></canvas></div>
+  </div>
+
   <!-- HISTORIAL — igual que calculadora -->
   <div class="hist-card">
     <div class="hist-head">
@@ -267,11 +289,15 @@ function applyFilters(){
   var d0 = document.getElementById('f-desde').value;
   var d1 = document.getElementById('f-hasta').value;
   var es = document.getElementById('f-estado').value;
+  var ex = document.getElementById('f-extractora').value;
+  var mes = document.getElementById('f-mes').value;
   var f  = _all.filter(function(r){
     if(s && !(r.placa||'').includes(s) && !(r.proveedor||'').toUpperCase().includes(s)) return false;
     if(d0 && r.fecha < d0) return false;
     if(d1 && r.fecha > d1) return false;
     if(es && r.estado !== es) return false;
+    if(ex && (r.extractora||'') !== ex) return false;
+    if(mes && !(r.fecha||'').slice(5,7).includes(mes)) return false;
     return true;
   });
   renderHero(_all);
@@ -280,12 +306,15 @@ function applyFilters(){
   renderChart(f);
   renderAreaChart(f);
   renderFSChart(f);
+  renderComparativa(_all);
   renderTable(f);
 }
 
 function resetFilters(){
   ['f-search','f-desde','f-hasta'].forEach(function(id){document.getElementById(id).value='';});
   document.getElementById('f-estado').value='';
+  document.getElementById('f-extractora').value='';
+  document.getElementById('f-mes').value='';
   applyFilters();
 }
 
@@ -711,6 +740,70 @@ function renderFSChart(d){
 }
 
 
+var _chartComp = null;
+function renderComparativa(allData){
+  var extractoras = ['Codazzi','Maria La Baja','Sinu','Tibu'];
+  var colors = ['#2563eb','#16a34a','#ea580c','#7c3aed'];
+  var colors_bg = ['rgba(37,99,235,.15)','rgba(22,163,74,.15)','rgba(234,88,12,.15)','rgba(124,58,237,.15)'];
+
+  // Group by month and extractora
+  var months = {};
+  allData.forEach(function(r){
+    if(!r.fecha||!r.ar) return;
+    var m = r.fecha.slice(0,7); // YYYY-MM
+    if(!months[m]) months[m] = {};
+    var ex = r.extractora||'Sin extractora';
+    if(!months[m][ex]) months[m][ex] = [];
+    months[m][ex].push(r.ar);
+  });
+
+  var labels = Object.keys(months).sort();
+  var datasets = extractoras.map(function(ex,i){
+    return {
+      label: ex,
+      data: labels.map(function(m){
+        var vals = months[m][ex];
+        if(!vals||!vals.length) return null;
+        return parseFloat((vals.reduce(function(a,b){return a+b},0)/vals.length).toFixed(2));
+      }),
+      borderColor: colors[i],
+      backgroundColor: colors_bg[i],
+      borderWidth: 2,
+      pointRadius: 5,
+      pointHoverRadius: 7,
+      tension: 0.3,
+      fill: false,
+      spanGaps: true
+    };
+  });
+
+  if(_chartComp){_chartComp.destroy();_chartComp=null;}
+  var ctx = document.getElementById('chart-comparativa');
+  if(!ctx) return;
+  _chartComp = new Chart(ctx.getContext('2d'), {
+    type: 'line',
+    data: { labels: labels, datasets: datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position:'top', labels:{font:{size:11},padding:16} },
+        tooltip: {
+          backgroundColor:'rgba(15,22,40,.95)',
+          borderColor:'rgba(96,165,250,.3)',borderWidth:1,
+          titleColor:'#93c5fd',bodyColor:'#e2e8f0',padding:10,
+          callbacks:{ label:function(c){return ' '+c.dataset.label+': '+c.raw+'%'; }}
+        }
+      },
+      scales:{
+        x:{ticks:{font:{size:11}},grid:{color:'rgba(0,0,0,.06)'}},
+        y:{ticks:{font:{size:11},callback:function(v){return v+'%'}},
+           grid:{color:'rgba(0,0,0,.06)'},
+           min:15}
+      }
+    }
+  });
+}
+
 function renderTable(d){
   setText('tbl-count', d.length+' registro'+(d.length!==1?'s':''));
   var tb=document.getElementById('tbl-body');
@@ -755,6 +848,7 @@ function renderTable(d){
       '<td class="date">'+r.fecha+'</td>'+
       '<td class="plate">'+r.placa+'</td>'+
       '<td>'+(r.proveedor||'—')+'</td>'+
+      '<td><span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;background:rgba(37,99,235,.1);color:#1d4ed8">'+(r.extractora||'—')+'</span></td>'+
       '<td>'+peso+'</td>'+
       '<td class="'+arCls+'">'+parseFloat(r.ar).toFixed(2)+'%</td>'+
       '<td style="color:var(--muted)">'+(r.hm?r.hm.toFixed(1)+'%':'—')+'</td>'+
