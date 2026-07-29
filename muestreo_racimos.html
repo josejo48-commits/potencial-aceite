@@ -51,13 +51,13 @@ body{font-family:'Sora',sans-serif;color:var(--text);background:var(--bg);max-wi
 /* RACIMOS GRID */
 .racimos-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .racimo-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:12px;box-shadow:var(--shadow);transition:all .2s;position:relative}
-.racimo-card.selected{border-color:var(--verde);background:var(--verde5);box-shadow:0 0 0 3px rgba(34,197,94,.2)}
-.racimo-card.selected::after{content:'★';position:absolute;top:8px;right:10px;color:var(--verde);font-size:14px}
+.racimo-card.selected{border-color:#ea580c;background:#fff7ed;box-shadow:0 0 0 3px rgba(234,88,12,.2)}
+.racimo-card.selected::after{content:'★';position:absolute;top:8px;right:10px;color:#ea580c;font-size:14px}
 .racimo-num{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted2);margin-bottom:6px}
 .racimo-input{width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:16px;font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--text);background:transparent;text-align:center;transition:border .2s}
 .racimo-input:focus{outline:none;border-color:var(--verde);background:#fff}
 .racimo-input.has-val{border-color:var(--verde3);background:var(--verde5)}
-.racimo-card.selected .racimo-input{border-color:var(--verde);background:#fff}
+.racimo-card.selected .racimo-input{border-color:#ea580c;background:#fff}
 .racimo-diff{font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--muted2);text-align:center;margin-top:4px;min-height:14px}
 .racimo-diff.close{color:var(--verde);font-weight:600}
 
