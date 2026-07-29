@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#14532d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Muestreo de Racimos</title>
+<link rel="manifest" href="data:application/json,{
+  %22name%22:%22Muestreo de Racimos%22,
+  %22short_name%22:%22Racimos%22,
+  %22start_url%22:%22.%22,
+  %22display%22:%22standalone%22,
+  %22background_color%22:%22%2314532d%22,
+  %22theme_color%22:%22%2314532d%22,
+  %22icons%22:[{%22src%22:%22https://raw.githubusercontent.com/googlesamples/web-fundamentals/master/fundamentals/getting-started/your-first-progressive-web-app/images/touch/homescreen192.png%22,%22sizes%22:%22192x192%22,%22type%22:%22image/png%22}]
+}">
+<meta name="mobile-web-app-capable" content="yes">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --verde:#16a34a;--verde2:#22c55e;--verde3:#bbf7d0;--verde4:#14532d;--verde5:#f0fdf4;
+  --naranja:#ea580c;--naranja2:#fb923c;--naranja3:#ffedd5;
+  --azul:#1d4ed8;--azul2:#3b82f6;--azul3:#dbeafe;
+  --bg:#f8fafc;--surface:#ffffff;--border:#e2e8f0;--text:#0f172a;--muted:#64748b;--muted2:#94a3b8;
+  --r:12px;--r2:18px;--shadow:0 1px 3px rgba(0,0,0,.08),0 4px 16px rgba(0,0,0,.06);
+}
+html{background:var(--bg);min-height:100vh}
+body{font-family:'Sora',sans-serif;color:var(--text);background:var(--bg);max-width:480px;margin:0 auto;padding:0 0 100px}
+
+/* HEADER */
+.app-header{background:linear-gradient(160deg,var(--verde4) 0%,var(--verde) 100%);padding:52px 20px 28px;position:relative;overflow:hidden}
+.app-header::before{content:'🌴';position:absolute;right:-10px;top:10px;font-size:80px;opacity:.12;line-height:1}
+.app-header h1{font-size:22px;font-weight:700;color:#fff;letter-spacing:-.02em;margin-bottom:4px}
+.app-header p{font-size:13px;color:rgba(255,255,255,.7);font-weight:400}
+.app-header .badge{display:inline-flex;align-items:center;gap:6px;margin-top:14px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 14px;font-size:12px;color:#fff;font-weight:500}
+.badge-dot{width:7px;height:7px;border-radius:50%;background:#4ade80;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* TABS */
+.tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;padding:0 4px}
+.tab-btn{flex:1;padding:14px 4px;font-size:12px;font-weight:600;color:var(--muted);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;font-family:'Sora',sans-serif;letter-spacing:.02em;text-transform:uppercase}
+.tab-btn.active{color:var(--verde);border-bottom-color:var(--verde)}
+
+/* SECTION */
+.section{padding:16px}
+.section-hidden{display:none}
+
+/* STATS BAR */
+.stats-bar{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px;text-align:center;box-shadow:var(--shadow)}
+.stat-val{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600;color:var(--verde4);line-height:1;margin-bottom:3px}
+.stat-lbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted2)}
+
+/* RACIMOS GRID */
+.racimos-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.racimo-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:12px;box-shadow:var(--shadow);transition:all .2s;position:relative}
+.racimo-card.selected{border-color:var(--verde);background:var(--verde5);box-shadow:0 0 0 3px rgba(34,197,94,.2)}
+.racimo-card.selected::after{content:'★';position:absolute;top:8px;right:10px;color:var(--verde);font-size:14px}
+.racimo-num{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted2);margin-bottom:6px}
+.racimo-input{width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:16px;font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--text);background:transparent;text-align:center;transition:border .2s}
+.racimo-input:focus{outline:none;border-color:var(--verde);background:#fff}
+.racimo-input.has-val{border-color:var(--verde3);background:var(--verde5)}
+.racimo-card.selected .racimo-input{border-color:var(--verde);background:#fff}
+.racimo-diff{font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--muted2);text-align:center;margin-top:4px;min-height:14px}
+.racimo-diff.close{color:var(--verde);font-weight:600}
+
+/* INFO BOX */
+.info-box{background:var(--verde5);border:1px solid var(--verde3);border-radius:var(--r);padding:14px;margin-bottom:16px;font-size:13px;color:var(--verde4);line-height:1.6}
+.info-box strong{font-weight:700}
+
+/* SELECTED LIST */
+.selected-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.sel-item{display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1.5px solid var(--verde3);border-radius:var(--r);padding:12px 16px;box-shadow:var(--shadow)}
+.sel-item-num{font-size:12px;font-weight:700;color:var(--verde4);background:var(--verde3);border-radius:6px;padding:2px 8px}
+.sel-item-val{font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:600;color:var(--verde4)}
+.sel-item-diff{font-size:11px;color:var(--verde);font-family:'JetBrains Mono',monospace}
+
+/* PEDUNCULO */
+.pedun-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px}
+.pedun-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:10px;box-shadow:var(--shadow)}
+.pedun-num{font-size:10px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.pedun-input{width:100%;padding:7px 8px;border:1.5px solid var(--border);border-radius:8px;font-size:15px;font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--text);background:transparent;text-align:center;transition:border .2s}
+.pedun-input:focus{outline:none;border-color:var(--naranja);background:#fff}
+.pedun-input.has-val{border-color:var(--naranja2);background:var(--naranja3)}
+
+.pedun-stat{background:linear-gradient(135deg,var(--naranja) 0%,var(--naranja2) 100%);border-radius:var(--r);padding:16px;text-align:center;margin-bottom:16px;color:#fff}
+.pedun-stat-val{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:700;line-height:1;margin-bottom:4px}
+.pedun-stat-lbl{font-size:12px;opacity:.85;font-weight:500}
+
+/* RESUMEN */
+.resumen-card{background:linear-gradient(135deg,var(--verde4) 0%,var(--verde) 100%);border-radius:var(--r2);padding:20px;color:#fff;margin-bottom:16px}
+.resumen-title{font-size:13px;font-weight:600;opacity:.8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px}
+.resumen-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.15)}
+.resumen-row:last-child{border-bottom:none}
+.resumen-lbl{font-size:13px;opacity:.85}
+.resumen-val{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700}
+
+/* BTN */
+.btn{width:100%;padding:14px;border:none;border-radius:var(--r);font-family:'Sora',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.02em}
+.btn-verde{background:var(--verde);color:#fff}
+.btn-verde:hover{background:var(--verde4)}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--muted);margin-top:8px}
+.btn-outline:hover{border-color:var(--muted);color:var(--text)}
+
+/* EMPTY STATE */
+.empty{text-align:center;padding:40px 20px;color:var(--muted2)}
+.empty-icon{font-size:40px;margin-bottom:12px;display:block;opacity:.5}
+.empty-txt{font-size:13px}
+
+/* SECTION DIVIDER */
+.sec-divider{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.sec-divider span{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted2);white-space:nowrap}
+.sec-divider::before,.sec-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* PROGRESS */
+.progress-wrap{background:var(--border);border-radius:20px;height:6px;margin-bottom:16px;overflow:hidden}
+.progress-bar{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--verde),var(--verde2));transition:width .4s ease}
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <h1>Muestreo de Racimos</h1>
+  <p>Selección de muestra representativa</p>
+  <div class="badge"><div class="badge-dot"></div><span id="badge-txt">0 de 28 ingresados</span></div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab('racimos')">🌿 Racimos</button>
+  <button class="tab-btn" onclick="showTab('seleccion')">⭐ Selección</button>
+  <button class="tab-btn" onclick="showTab('pedunculo')">📏 Pedúnculo</button>
+  <button class="tab-btn" onclick="showTab('resumen')">📋 Resumen</button>
+</div>
+
+<!-- TAB: RACIMOS -->
+<div class="section" id="tab-racimos">
+  <div class="stats-bar">
+    <div class="stat"><div class="stat-val" id="s-ingresados">0</div><div class="stat-lbl">Ingresados</div></div>
+    <div class="stat"><div class="stat-val" id="s-promedio">—</div><div class="stat-lbl">Promedio kg</div></div>
+    <div class="stat"><div class="stat-val" id="s-selec">0/6</div><div class="stat-lbl">Seleccionados</div></div>
+  </div>
+  <div class="progress-wrap"><div class="progress-bar" id="progress" style="width:0%"></div></div>
+  <div class="racimos-grid" id="racimos-grid"></div>
+</div>
+
+<!-- TAB: SELECCION -->
+<div class="section section-hidden" id="tab-seleccion">
+  <div class="info-box" id="sel-info">Ingresa los pesos de los racimos para ver la selección automática.</div>
+  <div id="selected-list"></div>
+</div>
+
+<!-- TAB: PEDUNCULO -->
+<div class="section section-hidden" id="tab-pedunculo">
+  <div class="sec-divider"><span>Peso pedúnculo vacío</span></div>
+  <div class="pedun-stat">
+    <div class="pedun-stat-val" id="pedun-prom">— g</div>
+    <div class="pedun-stat-lbl">Promedio pedúnculo vacío</div>
+  </div>
+  <div class="pedun-grid" id="pedun-grid"></div>
+</div>
+
+<!-- TAB: RESUMEN -->
+<div class="section section-hidden" id="tab-resumen">
+  <div class="resumen-card">
+    <div class="resumen-title">📋 Resumen del muestreo</div>
+    <div class="resumen-row"><span class="resumen-lbl">Racimos ingresados</span><span class="resumen-val" id="r-ingresados">—</span></div>
+    <div class="resumen-row"><span class="resumen-lbl">Peso promedio</span><span class="resumen-val" id="r-promedio">—</span></div>
+    <div class="resumen-row"><span class="resumen-lbl">Peso mínimo</span><span class="resumen-val" id="r-min">—</span></div>
+    <div class="resumen-row"><span class="resumen-lbl">Peso máximo</span><span class="resumen-val" id="r-max">—</span></div>
+    <div class="resumen-row"><span class="resumen-lbl">6 seleccionados</span><span class="resumen-val" id="r-selec">—</span></div>
+    <div class="resumen-row"><span class="resumen-lbl">Promedio pedúnculo</span><span class="resumen-val" id="r-pedun">—</span></div>
+  </div>
+  <button class="btn btn-outline" onclick="limpiarTodo()">🗑 Limpiar todo</button>
+</div>
+
+<script>
+// State
+var pesos = new Array(28).fill(null);
+var pedunculos = new Array(6).fill(null);
+
+// Build racimos grid
+function buildGrid(){
+  var g = document.getElementById('racimos-grid');
+  g.innerHTML = '';
+  for(var i=0;i<28;i++){
+    (function(idx){
+      var card = document.createElement('div');
+      card.className = 'racimo-card';
+      card.id = 'card-'+idx;
+      card.innerHTML =
+        '<div class="racimo-num">Racimo '+(idx+1)+'</div>'+
+        '<input class="racimo-input" id="inp-'+idx+'" type="number" step="0.1" min="0" placeholder="0.0 kg" inputmode="decimal">'+
+        '<div class="racimo-diff" id="diff-'+idx+'"></div>';
+      g.appendChild(card);
+      var inp = card.querySelector('input');
+      inp.addEventListener('input', function(){
+        var v = parseFloat(this.value);
+        pesos[idx] = isNaN(v)||v<=0 ? null : v;
+        this.className = 'racimo-input'+(pesos[idx]?' has-val':'');
+        update();
+      });
+    })(i);
+  }
+}
+
+// Build pedunculo grid
+function buildPedunGrid(){
+  var g = document.getElementById('pedun-grid');
+  g.innerHTML = '';
+  for(var i=0;i<6;i++){
+    (function(idx){
+      var card = document.createElement('div');
+      card.className = 'pedun-card';
+      card.innerHTML =
+        '<div class="pedun-num">Muestra '+(idx+1)+'</div>'+
+        '<input class="pedun-input" id="pedun-'+idx+'" type="number" step="0.1" min="0" placeholder="0 g" inputmode="decimal">';
+      g.appendChild(card);
+      var inp = card.querySelector('input');
+      inp.addEventListener('input', function(){
+        var v = parseFloat(this.value);
+        pedunculos[idx] = isNaN(v)||v<=0 ? null : v;
+        this.className = 'pedun-input'+(pedunculos[idx]?' has-val':'');
+        updatePedun();
+      });
+    })(i);
+  }
+}
+
+function getIngresados(){ return pesos.filter(function(v){return v!==null}); }
+function getPromedio(){
+  var vals = getIngresados();
+  if(!vals.length) return null;
+  return vals.reduce(function(a,b){return a+b},0)/vals.length;
+}
+function getSelected(){
+  var prom = getPromedio();
+  if(!prom) return [];
+  var vals = pesos.map(function(v,i){return {v:v,i:i}}).filter(function(x){return x.v!==null});
+  vals.sort(function(a,b){return Math.abs(a.v-prom)-Math.abs(b.v-prom)});
+  return vals.slice(0,6);
+}
+
+function update(){
+  var ingresados = getIngresados();
+  var prom = getPromedio();
+  var selected = getSelected();
+  var selIdx = selected.map(function(x){return x.i});
+
+  // Badge
+  document.getElementById('badge-txt').textContent = ingresados.length+' de 28 ingresados';
+
+  // Stats
+  document.getElementById('s-ingresados').textContent = ingresados.length;
+  document.getElementById('s-promedio').textContent = prom ? prom.toFixed(1) : '—';
+  document.getElementById('s-selec').textContent = Math.min(ingresados.length,selected.length)+'/6';
+
+  // Progress
+  document.getElementById('progress').style.width = (ingresados.length/28*100)+'%';
+
+  // Cards
+  for(var i=0;i<28;i++){
+    var card = document.getElementById('card-'+i);
+    var diff = document.getElementById('diff-'+i);
+    var isSel = selIdx.indexOf(i)>=0;
+    card.className = 'racimo-card'+(isSel?' selected':'');
+    if(pesos[i]!==null && prom){
+      var d = Math.abs(pesos[i]-prom);
+      diff.textContent = (d<0.001?'≈':('Δ '+d.toFixed(1)+' kg'));
+      diff.className = 'racimo-diff'+(d<=prom*0.1?' close':'');
+    } else {
+      diff.textContent = '';
+      diff.className = 'racimo-diff';
+    }
+  }
+
+  // Seleccion tab
+  updateSeleccion(selected, prom);
+  updateResumen(ingresados, prom, selected);
+}
+
+function updateSeleccion(selected, prom){
+  var info = document.getElementById('sel-info');
+  var list = document.getElementById('selected-list');
+
+  if(!prom){
+    info.textContent = 'Ingresa los pesos de los racimos para ver la selección automática.';
+    info.style.display='block';
+    list.innerHTML='';
+    return;
+  }
+
+  info.innerHTML = '<strong>Promedio:</strong> '+prom.toFixed(2)+' kg &nbsp;|&nbsp; <strong>'+selected.length+' racimos</strong> más cercanos al promedio seleccionados automáticamente.';
+  info.style.display='block';
+
+  if(!selected.length){list.innerHTML='';return;}
+
+  list.innerHTML = selected.map(function(x){
+    var d = Math.abs(x.v - prom);
+    return '<div class="sel-item">'+
+      '<span class="sel-item-num">Racimo '+(x.i+1)+'</span>'+
+      '<span class="sel-item-val">'+x.v.toFixed(1)+' kg</span>'+
+      '<span class="sel-item-diff">Δ '+d.toFixed(2)+' kg</span>'+
+    '</div>';
+  }).join('');
+}
+
+function updatePedun(){
+  var vals = pedunculos.filter(function(v){return v!==null});
+  var prom = vals.length ? vals.reduce(function(a,b){return a+b},0)/vals.length : null;
+  document.getElementById('pedun-prom').textContent = prom ? prom.toFixed(1)+' g' : '— g';
+  updateResumen(getIngresados(), getPromedio(), getSelected());
+}
+
+function updateResumen(ingresados, prom, selected){
+  document.getElementById('r-ingresados').textContent = ingresados.length+' / 28';
+  document.getElementById('r-promedio').textContent = prom ? prom.toFixed(2)+' kg' : '—';
+  document.getElementById('r-min').textContent = ingresados.length ? Math.min.apply(null,ingresados).toFixed(1)+' kg' : '—';
+  document.getElementById('r-max').textContent = ingresados.length ? Math.max.apply(null,ingresados).toFixed(1)+' kg' : '—';
+  document.getElementById('r-selec').textContent = selected.length ? selected.map(function(x){return 'R'+(x.i+1)}).join(', ') : '—';
+  var pvals = pedunculos.filter(function(v){return v!==null});
+  var pp = pvals.length ? pvals.reduce(function(a,b){return a+b},0)/pvals.length : null;
+  document.getElementById('r-pedun').textContent = pp ? pp.toFixed(1)+' g' : '—';
+}
+
+function showTab(name){
+  ['racimos','seleccion','pedunculo','resumen'].forEach(function(t){
+    document.getElementById('tab-'+t).className = 'section'+(t===name?'':' section-hidden');
+  });
+  document.querySelectorAll('.tab-btn').forEach(function(b,i){
+    b.className = 'tab-btn'+(i===['racimos','seleccion','pedunculo','resumen'].indexOf(name)?' active':'');
+  });
+}
+
+function limpiarTodo(){
+  if(!confirm('¿Limpiar todos los datos?')) return;
+  pesos = new Array(28).fill(null);
+  pedunculos = new Array(6).fill(null);
+  buildGrid();
+  buildPedunGrid();
+  update();
+  updatePedun();
+}
+
+// Init
+buildGrid();
+buildPedunGrid();
+update();
+</script>
+
+<script>
+if('serviceWorker' in navigator){
+  var swCode = `
+    self.addEventListener('install', function(e){
+      e.waitUntil(caches.open('racimos-v1').then(function(cache){
+        return cache.addAll([location.pathname]);
+      }));
+    });
+    self.addEventListener('fetch', function(e){
+      e.respondWith(caches.match(e.request).then(function(r){
+        return r || fetch(e.request);
+      }));
+    });
+  `;
+  var blob = new Blob([swCode],{type:'application/javascript'});
+  navigator.serviceWorker.register(URL.createObjectURL(blob));
+}
+</script>
+</body>
+</html>
