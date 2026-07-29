@@ -346,7 +346,7 @@ update();
 
 <script>
 if('serviceWorker' in navigator && location.protocol==='https:'){
-  navigator.serviceWorker.register('/potencial-aceite/sw_racimos.js',{scope:'/potencial-aceite/'})
+  navigator.serviceWorker.register('/potencial-aceite/sw_racimos.js')
     .then(function(){console.log('SW ok');})
     .catch(function(e){console.log('SW skip',e);});
 }
