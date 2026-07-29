@@ -1,4 +1,4 @@
-const CACHE = 'racimos-v3';
+const CACHE = 'racimos-v4';
 const FILES = [
   '/potencial-aceite/muestreo_racimos.html',
   '/potencial-aceite/manifest_racimos.json'
