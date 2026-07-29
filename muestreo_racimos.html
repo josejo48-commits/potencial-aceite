@@ -193,7 +193,8 @@ function buildGrid(){
       inp.addEventListener('input', function(){
         var v = parseFloat(this.value);
         pesos[idx] = isNaN(v)||v<=0 ? null : v;
-        this.className = 'racimo-input'+(pesos[idx]?' has-val':'');
+        var isSel = document.getElementById('card-'+idx).classList.contains('selected');
+        this.className = 'racimo-input'+(pesos[idx]&&!isSel?' has-val':'');
         update();
       });
     })(i);
@@ -260,6 +261,8 @@ function update(){
     var diff = document.getElementById('diff-'+i);
     var isSel = selIdx.indexOf(i)>=0;
     card.className = 'racimo-card'+(isSel?' selected':'');
+    var inp = document.getElementById('inp-'+i);
+    if(inp) inp.className = 'racimo-input'+(pesos[i]&&!isSel?' has-val':'');
     if(pesos[i]!==null && prom){
       var d = Math.abs(pesos[i]-prom);
       diff.textContent = (d<0.001?'≈':('Δ '+d.toFixed(1)+' kg'));
