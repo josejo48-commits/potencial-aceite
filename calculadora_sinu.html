@@ -2737,9 +2737,9 @@ function guardarRegistro(){
       b7:getVal('q-b7')
     },
     fs:isNaN(_lastFS)?null:parseFloat(_lastFS.toFixed(2)),
-    fn:getVal('fs-fn'),
-    fp:getVal('fs-fp'),
-    fa:getVal('fs-fa'),
+    fn:parseFloat(document.getElementById('fs-fn').value)||0,
+    fp:parseFloat(document.getElementById('fs-fp').value)||0,
+    fa:parseFloat(document.getElementById('fs-fa').value)||0,
     inputs:{
       praq:getVal('praq'),pfn:getVal('pfn'),
       pfm:getVal('pfm'),pnf:getVal('pnf'),pcs:getVal('pcs'),
@@ -3193,9 +3193,9 @@ function openEditModal(docId,id){
   });
 
   // Fruit Set
-  document.getElementById('em-fs-fn').value = r.fn||0;
-  document.getElementById('em-fs-fp').value = r.fp||0;
-  document.getElementById('em-fs-fa').value = r.fa||0;
+  document.getElementById('em-fs-fn').value = r.fn!=null?r.fn:'';
+  document.getElementById('em-fs-fp').value = r.fp!=null?r.fp:'';
+  document.getElementById('em-fs-fa').value = r.fa!=null?r.fa:'';
   recalcEditFS();
   recalcEdit();
   recalcEditCalidad();
