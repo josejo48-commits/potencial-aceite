@@ -407,6 +407,7 @@ function renderKPICalidad(d){
 
 /* ── CHART ── */
 function renderChart(d){
+  if(!d||!d.length){if(_chart){_chart.destroy();_chart=null;}return;}
   var sl=d.slice(0,30).reverse();
   var labels=sl.map(function(r){return r.placa});
   var vals=sl.map(function(r){return parseFloat(r.ar.toFixed(2))});
@@ -525,7 +526,16 @@ function renderAreaChart(d){
   var canvas = document.getElementById('chart-area');
   if(!canvas) return;
   var sl = d.slice(0,30).reverse();
-  if(!sl.length) return;
+  if(!sl.length){
+    var ctx0=canvas.getContext('2d');
+    canvas.width=canvas.offsetWidth*(window.devicePixelRatio||1);
+    canvas.height=canvas.offsetHeight*(window.devicePixelRatio||1);
+    ctx0.clearRect(0,0,canvas.width,canvas.height);
+    // Remove old tooltip listeners
+    if(canvas._tooltipHandler) canvas.removeEventListener('mousemove',canvas._tooltipHandler);
+    if(canvas._leaveHandler) canvas.removeEventListener('mouseleave',canvas._leaveHandler);
+    return;
+  }
 
   var W = canvas.offsetWidth || 600;
   var H = canvas.offsetHeight || 280;
@@ -639,8 +649,18 @@ function renderAreaChart(d){
 
 
 function renderFSChart(d){
-  if(!d||!d.length) return;
   var canvas = document.getElementById('chart-fs');
+  if(!canvas) return;
+  var sl2 = d.filter(function(r){return r.fs!=null&&!isNaN(r.fs)&&r.fs>0;});
+  if(!d||!d.length||!sl2.length){
+    if(window._fsChart){window._fsChart.destroy();window._fsChart=null;}
+    canvas.width=canvas.offsetWidth*(window.devicePixelRatio||1);
+    canvas.height=canvas.offsetHeight*(window.devicePixelRatio||1);
+    var ctx0=canvas.getContext('2d');ctx0.clearRect(0,0,canvas.width,canvas.height);
+    if(canvas._tooltipHandler) canvas.removeEventListener('mousemove',canvas._tooltipHandler);
+    if(canvas._leaveHandler) canvas.removeEventListener('mouseleave',canvas._leaveHandler);
+    return;
+  }
   if(!canvas) return;
   var sl = d.filter(function(r){ return r.fs!=null && !isNaN(r.fs) && r.fs>0; }).slice(0,30).reverse();
   if(!sl.length){ canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height); return; }
@@ -850,7 +870,9 @@ function renderCompFS(d){
   }).filter(function(d){return d!==null;});
   if(_chartCompFS){_chartCompFS.destroy();_chartCompFS=null;}
   var ctx=document.getElementById('chart-comp-fs');
-  if(!ctx||!labels.length) return;
+  if(!ctx||!labels.length||!datasets.length){
+    if(ctx){var ctx2=ctx.getContext('2d');ctx2.clearRect(0,0,ctx.width,ctx.height);}return;
+  }
   _chartCompFS=new Chart(ctx.getContext('2d'),{type:'line',data:{labels:labels,datasets:datasets},
     options:{responsive:true,maintainAspectRatio:false,
     plugins:{legend:{position:'top'},tooltip:{callbacks:{label:function(c){return ' '+c.dataset.label+': '+c.raw+'%'}}}},
@@ -881,7 +903,9 @@ function renderCompTEA(d){
   }).filter(function(d){return d!==null;});
   if(_chartCompTEA){_chartCompTEA.destroy();_chartCompTEA=null;}
   var ctx=document.getElementById('chart-comp-tea');
-  if(!ctx||!labels.length) return;
+  if(!ctx||!labels.length||!datasets.length){
+    if(ctx){var ctx2=ctx.getContext('2d');ctx2.clearRect(0,0,ctx.width,ctx.height);}return;
+  }
   _chartCompTEA=new Chart(ctx.getContext('2d'),{type:'line',data:{labels:labels,datasets:datasets},
     options:{responsive:true,maintainAspectRatio:false,
     plugins:{legend:{position:'top'},tooltip:{callbacks:{label:function(c){return ' '+c.dataset.label+': '+c.raw+'%'}}}},
