@@ -672,11 +672,6 @@ td.date{color:rgba(255,255,255,.4);font-family:'JetBrains Mono',monospace;font-s
         <input type="date" id="fecha-analisis">
         <div class="hint">Por defecto: hoy</div>
       </div>
-      <div class="field">
-        <label><em class="green">TEA</em>TEA del día (%)</label>
-        <input type="number" id="tea-dia" placeholder="Ej: 22.5" step="0.01" min="0" max="100">
-        <div class="hint">Tasa de Extracción de Aceite del día</div>
-      </div>
     </div>
   </div>
 </div>
@@ -2707,7 +2702,6 @@ function guardarRegistro(){
     placa:placa,
     proveedor:proveedor||'—',
     pesoCarga:pesoCarga||0,
-    tea:parseFloat(document.getElementById('tea-dia').value)||null,
     fr:_lastFR,
     mf:_lastMF,
     hm:_lastHM,
@@ -2766,7 +2760,6 @@ function limpiarFormulario(){
     var el=document.getElementById(id); if(el) el.value='';
   });
   document.getElementById('peso-carga').value='';
-  document.getElementById('tea-dia').value='';
   document.getElementById('fecha-analisis').value=new Date().toISOString().split('T')[0];
   // Reset select RFF to 28
   var rffEl=document.getElementById('q-rff');
@@ -2922,7 +2915,7 @@ function renderHistorial(){
 
   body.innerHTML='<div class="hist-table-wrap"><table>'+
     '<thead><tr>'+
-      '<th>Fecha</th><th>Placa</th><th>Proveedor</th><th>Peso carga</th><th>TEA %</th>'+
+      '<th>Fecha</th><th>Placa</th><th>Proveedor</th><th>Peso carga</th>'+
       '<th>AR %</th><th>Humedad</th><th>Calidad</th><th style="text-align:center">Acciones</th>'+
     '</tr></thead>'+
     '<tbody>'+rows+'</tbody>'+
@@ -2940,7 +2933,7 @@ function exportarCSV(){
   hist.forEach(function(r){
     var q=r.calidad||{};
     rows.push([
-      r.fecha,r.placa,'"'+(r.proveedor||'')+ '"',r.pesoCarga||0,r.tea||'',
+      r.fecha,r.placa,'"'+(r.proveedor||'')+ '"',r.pesoCarga||0,
       r.ar.toFixed(3),r.fr.toFixed(3),r.mf.toFixed(3),r.hm.toFixed(3),r.amf.toFixed(3),
       r.estado,
       q.rff||0,q.verde||0,q.sobre||0,q.podrido||0,q.pedun||0,q.demo||0,q.corona||0,q.otras||0
@@ -3168,7 +3161,6 @@ function openEditModal(docId,id){
   document.getElementById('em-placa').value = r.placa||'';
   document.getElementById('em-proveedor').value = r.proveedor!=='—'?r.proveedor:'';
   document.getElementById('em-peso').value = r.pesoCarga||'';
-  document.getElementById('em-tea').value = r.tea!=null?r.tea:'';
 
   // Inputs laboratorio
   if(r.inputs){
@@ -3307,7 +3299,6 @@ function guardarEdicion(){
   r.placa    = document.getElementById('em-placa').value.trim().toUpperCase() || r.placa;
   r.proveedor= document.getElementById('em-proveedor').value.trim()||'—';
   r.pesoCarga= parseFloat(document.getElementById('em-peso').value)||0;
-  var teaVal = document.getElementById('em-tea').value; r.tea = teaVal!==''?parseFloat(teaVal)||null:null;
 
   // Recalcular con nuevos inputs
   var gv = function(id){var v=parseFloat(document.getElementById(id).value);return isNaN(v)?0:v;};
