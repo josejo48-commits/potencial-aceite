@@ -134,6 +134,25 @@
 
   #app{ display:block; }
   .hidden{ display:none !important; }
+
+  /* ---------- MUSIC TOGGLE (like SIGAME) ---------- */
+  .music-btn{
+    position:fixed; right:18px; bottom:18px; z-index:30;
+    width:52px; height:52px; border-radius:50%; border:none; cursor:pointer;
+    background:var(--accent); color:var(--white); font-size:20px;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 6px 18px rgba(0,0,0,.3);
+    transition:transform .15s, background .2s;
+  }
+  .music-btn:hover{ transform:scale(1.06); }
+  .music-btn.playing{
+    background:var(--primary);
+    animation:musicPulse 1.8s ease-in-out infinite;
+  }
+  @keyframes musicPulse{
+    0%,100%{ box-shadow:0 6px 18px rgba(0,0,0,.3), 0 0 0 0 rgba(116,198,157,.55); }
+    50%{ box-shadow:0 6px 18px rgba(0,0,0,.3), 0 0 0 10px rgba(116,198,157,0); }
+  }
 </style>
 </head>
 <body>
@@ -141,6 +160,9 @@
 <div class="bg-photo active" id="bgLayerA"></div>
 <div class="bg-photo" id="bgLayerB"></div>
 <div class="bg-overlay"></div>
+
+<audio id="bgMusic" src="Porro-Monteria.mp3" loop preload="auto"></audio>
+<button class="music-btn" id="musicToggle" title="Música de fondo" aria-label="Activar o pausar música">🎵</button>
 
 <div class="topbar">
   <div class="logo">🌴</div>
@@ -409,6 +431,45 @@ function rotateBackground() {
   showingA = !showingA;
 }
 setInterval(rotateBackground, 7000);
+
+// ---------- Música de fondo ----------
+const bgMusic = document.getElementById("bgMusic");
+const musicBtn = document.getElementById("musicToggle");
+bgMusic.volume = 0.35;
+let userPaused = false;
+
+function setPlayingUI(isPlaying) {
+  musicBtn.classList.toggle("playing", isPlaying);
+  musicBtn.textContent = isPlaying ? "🎵" : "🔇";
+}
+
+function tryAutoplay() {
+  bgMusic.play().then(() => setPlayingUI(true)).catch(() => setPlayingUI(false));
+}
+tryAutoplay();
+
+// Si el navegador bloqueó el autoplay, arranca con la primera interacción del usuario
+function unlockOnFirstInteraction() {
+  if (!userPaused && bgMusic.paused) {
+    bgMusic.play().then(() => setPlayingUI(true)).catch(() => {});
+  }
+  document.removeEventListener("click", unlockOnFirstInteraction);
+  document.removeEventListener("keydown", unlockOnFirstInteraction);
+}
+document.addEventListener("click", unlockOnFirstInteraction);
+document.addEventListener("keydown", unlockOnFirstInteraction);
+
+musicBtn.addEventListener("click", (e) => {
+  e.stopPropagation();
+  if (bgMusic.paused) {
+    userPaused = false;
+    bgMusic.play().then(() => setPlayingUI(true)).catch(() => {});
+  } else {
+    userPaused = true;
+    bgMusic.pause();
+    setPlayingUI(false);
+  }
+});
 </script>
 </body>
 </html>
