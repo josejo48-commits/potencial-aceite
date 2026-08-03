@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resultados — Evaluación Capacitación Sinú</title>
+<style>
+  :root{
+    --primary:#1B4332;
+    --primary-dark:#123024;
+    --second:#74C69D;
+    --accent:#E85D04;
+    --light:#F6F4EE;
+    --warn:#BB3E03;
+    --ok:#1B7A3D;
+    --text:#1F2A24;
+    --muted:#6B7A70;
+    --white:#FFFFFF;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; font-family:'Calibri','Segoe UI',Arial,sans-serif; background:var(--light); color:var(--text); }
+
+  .topbar{ background:var(--primary); color:var(--white); padding:22px 24px; }
+  .topbar .tag{ font-size:11px; letter-spacing:2px; font-weight:700; color:var(--second); text-transform:uppercase; }
+  .topbar h1{ margin:6px 0 4px; font-family:Cambria, Georgia, serif; font-size:24px; }
+  .topbar p{ margin:0; font-size:13px; color:#D8E5DC; }
+
+  .wrap{ max-width:1180px; margin:0 auto; padding:22px 20px 60px; }
+
+  .stats{ display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:14px; margin-bottom:20px; }
+  .stat-card{ background:var(--white); border-radius:var(--radius); padding:16px 18px; box-shadow:0 1px 3px rgba(0,0,0,0.06); }
+  .stat-card .n{ font-size:30px; font-weight:800; color:var(--accent); font-family:Cambria, Georgia, serif; }
+  .stat-card .l{ font-size:12px; color:var(--muted); margin-top:2px; }
+
+  .toolbar{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:16px; }
+  .toolbar select, .toolbar input{
+    padding:9px 12px; border:1px solid #E3E0D5; border-radius:8px; font-size:13px;
+    font-family:inherit; background:var(--white); color:var(--text);
+  }
+  .toolbar .spacer{ flex:1; }
+  .btn-export{
+    padding:9px 16px; background:var(--primary); color:var(--white); border:none;
+    border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit;
+  }
+  .btn-export:hover{ background:var(--primary-dark); }
+
+  table{ width:100%; border-collapse:collapse; background:var(--white); border-radius:var(--radius); overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.06); }
+  thead th{
+    background:var(--primary); color:var(--white); text-align:left; font-size:12px;
+    padding:12px 14px; letter-spacing:.3px;
+  }
+  tbody td{ padding:11px 14px; font-size:13px; border-bottom:1px solid #EFEDE4; }
+  tbody tr:hover{ background:#FBFAF6; cursor:pointer; }
+  tbody tr:last-child td{ border-bottom:none; }
+
+  .badge-score{ padding:4px 10px; border-radius:14px; font-weight:700; font-size:12px; }
+  .badge-ok{ background:#EAF6EE; color:var(--ok); }
+  .badge-warn{ background:#FCE9DA; color:var(--warn); }
+
+  .empty, .loading{ text-align:center; padding:70px 16px; color:var(--muted); font-size:14px; }
+
+  .modal-bg{ display:none; position:fixed; inset:0; background:rgba(27,67,50,0.55); z-index:50; align-items:center; justify-content:center; padding:20px; }
+  .modal{ background:var(--white); border-radius:var(--radius); max-width:640px; width:100%; max-height:85vh; overflow-y:auto; padding:24px; }
+  .modal h3{ font-family:Cambria, Georgia, serif; color:var(--primary); margin-top:0; }
+  .modal .close{ float:right; cursor:pointer; font-size:18px; color:var(--muted); background:none; border:none; }
+  .detail-item{ padding:10px 0; border-bottom:1px solid #EFEDE4; }
+  .detail-item:last-child{ border-bottom:none; }
+  .detail-item .topic{ font-size:10.5px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:.5px; }
+  .detail-item .q{ font-size:13.5px; font-weight:600; margin:3px 0; }
+  .detail-item .a{ font-size:13px; }
+  .detail-item .a.correct{ color:var(--ok); }
+  .detail-item .a.wrong{ color:var(--warn); }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="tag">Oleoflores S.A.S. · Gestión Humana</div>
+  <h1>Resultados — Evaluación de capacitación Sinú</h1>
+  <p>Potencial de Aceite · Fruit Set · Índice de Yodo · Curva de secado</p>
+</div>
+
+<div class="wrap">
+  <div class="stats" id="statsHost">
+    <div class="stat-card"><div class="n" id="statTotal">–</div><div class="l">Evaluaciones recibidas</div></div>
+    <div class="stat-card"><div class="n" id="statAvg">–</div><div class="l">Promedio general</div></div>
+    <div class="stat-card"><div class="n" id="statAprob">–</div><div class="l">Aprobados (≥70%)</div></div>
+    <div class="stat-card"><div class="n" id="statPend">–</div><div class="l">Por reforzar (&lt;70%)</div></div>
+  </div>
+
+  <div class="toolbar">
+    <select id="filterCargo">
+      <option value="">Todos los cargos</option>
+      <option value="Analista">Analista</option>
+      <option value="Muestreador">Muestreador</option>
+    </select>
+    <input type="text" id="filterNombre" placeholder="Buscar por nombre o cédula...">
+    <div class="spacer"></div>
+    <button class="btn-export" id="exportBtn">Exportar CSV</button>
+  </div>
+
+  <div id="tableHost">
+    <div class="loading">Cargando resultados...</div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <button class="close" id="modalClose">✕</button>
+    <h3 id="modalName">—</h3>
+    <div id="modalDetail"></div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, getDocs, orderBy, query } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+// ⚠️ Debe ser la MISMA configuración que evaluacion_capacitacion_sinu.html
+const firebaseConfig = {
+  apiKey: "AIzaSyDWoJcMOWlzOTrD120e8pZbr9DWvHBUbz0",
+  authDomain: "potencial-de-aceite.firebaseapp.com",
+  projectId: "potencial-de-aceite",
+  storageBucket: "potencial-de-aceite.firebasestorage.app",
+  messagingSenderId: "344846336116",
+  appId: "1:344846336116:web:4f10f86f923605c5179121"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+let allRows = [];
+
+async function load() {
+  try {
+    const q = query(collection(db, "evaluaciones_sinu"), orderBy("fecha", "desc"));
+    const snap = await getDocs(q);
+    allRows = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderStats(allRows);
+    renderTable(allRows);
+  } catch (err) {
+    console.error(err);
+    document.getElementById("tableHost").innerHTML = `<div class="empty">No se pudieron cargar los resultados. Verifica la configuración de Firebase.</div>`;
+  }
+}
+
+function renderStats(rows) {
+  const total = rows.length;
+  const avg = total ? Math.round(rows.reduce((s, r) => s + (r.porcentaje || 0), 0) / total) : 0;
+  const aprob = rows.filter(r => (r.porcentaje || 0) >= 70).length;
+  const pend = total - aprob;
+  document.getElementById("statTotal").textContent = total;
+  document.getElementById("statAvg").textContent = total ? avg + "%" : "–";
+  document.getElementById("statAprob").textContent = aprob;
+  document.getElementById("statPend").textContent = pend;
+}
+
+function fmtDate(ts) {
+  if (!ts || !ts.toDate) return "—";
+  const d = ts.toDate();
+  return d.toLocaleDateString("es-CO", { day: "2-digit", month: "short", year: "numeric" }) +
+    " · " + d.toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" });
+}
+
+function renderTable(rows) {
+  const host = document.getElementById("tableHost");
+  if (!rows.length) {
+    host.innerHTML = `<div class="empty">Aún no hay evaluaciones registradas.</div>`;
+    return;
+  }
+  const trs = rows.map(r => {
+    const pct = r.porcentaje || 0;
+    const badgeClass = pct >= 70 ? "badge-ok" : "badge-warn";
+    return `
+      <tr data-id="${r.id}">
+        <td>${r.nombre || "—"}</td>
+        <td>${r.cedula || "—"}</td>
+        <td>${r.cargo || "—"}</td>
+        <td>${fmtDate(r.fecha)}</td>
+        <td>${r.puntajeTotal ?? "—"} / ${r.totalPreguntas ?? "—"}</td>
+        <td><span class="badge-score ${badgeClass}">${pct}%</span></td>
+      </tr>`;
+  }).join("");
+
+  host.innerHTML = `
+    <table>
+      <thead><tr>
+        <th>Nombre</th><th>Cédula</th><th>Cargo</th><th>Fecha</th><th>Puntaje</th><th>%</th>
+      </tr></thead>
+      <tbody>${trs}</tbody>
+    </table>`;
+
+  host.querySelectorAll("tbody tr").forEach(tr => {
+    tr.addEventListener("click", () => openModal(tr.dataset.id));
+  });
+}
+
+function applyFilters() {
+  const cargo = document.getElementById("filterCargo").value;
+  const term = document.getElementById("filterNombre").value.trim().toLowerCase();
+  let filtered = allRows;
+  if (cargo) filtered = filtered.filter(r => r.cargo === cargo);
+  if (term) filtered = filtered.filter(r =>
+    (r.nombre || "").toLowerCase().includes(term) || (r.cedula || "").toLowerCase().includes(term)
+  );
+  renderTable(filtered);
+}
+document.getElementById("filterCargo").addEventListener("change", applyFilters);
+document.getElementById("filterNombre").addEventListener("input", applyFilters);
+
+function openModal(id) {
+  const row = allRows.find(r => r.id === id);
+  if (!row) return;
+  document.getElementById("modalName").textContent = `${row.nombre} — ${row.cargo}`;
+  const detail = (row.detalle || []).map(d => `
+    <div class="detail-item">
+      <div class="topic">${d.topic}</div>
+      <div class="q">${d.pregunta}</div>
+      <div class="a ${d.correcta ? "correct" : "wrong"}">${d.correcta ? "✓" : "✕"} ${d.respuestaSeleccionada}</div>
+    </div>
+  `).join("");
+  document.getElementById("modalDetail").innerHTML = detail || "<p>Sin detalle disponible.</p>";
+  document.getElementById("modalBg").style.display = "flex";
+}
+document.getElementById("modalClose").addEventListener("click", () => {
+  document.getElementById("modalBg").style.display = "none";
+});
+document.getElementById("modalBg").addEventListener("click", (e) => {
+  if (e.target.id === "modalBg") document.getElementById("modalBg").style.display = "none";
+});
+
+document.getElementById("exportBtn").addEventListener("click", () => {
+  if (!allRows.length) return;
+  const headers = ["Nombre", "Cedula", "Cargo", "Fecha", "Puntaje", "Total", "Porcentaje"];
+  const lines = [headers.join(",")];
+  allRows.forEach(r => {
+    lines.push([
+      `"${r.nombre || ""}"`, `"${r.cedula || ""}"`, `"${r.cargo || ""}"`,
+      `"${fmtDate(r.fecha)}"`, r.puntajeTotal ?? "", r.totalPreguntas ?? "", r.porcentaje ?? ""
+    ].join(","));
+  });
+  const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = "evaluaciones_capacitacion_sinu.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+load();
+</script>
+</body>
+</html>
