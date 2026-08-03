@@ -1005,17 +1005,17 @@ td.date{color:rgba(255,255,255,.4);font-family:'JetBrains Mono',monospace;font-s
     <!-- INPUTS -->
     <div class="fields">
       <div class="field">
-        <label><em>FN</em>Frutos normales</label>
+        <label><em>FN — C7</em>Frutos normales</label>
         <input type="number" id="fs-fn" placeholder="Ej: 120" min="0" step="1" oninput="calcFS()">
         <div class="hint">Conteo total de frutos normales</div>
       </div>
       <div class="field">
-        <label><em>FP</em>Frutos partenocárpicos</label>
+        <label><em>FP — C5</em>Frutos partenocárpicos</label>
         <input type="number" id="fs-fp" placeholder="Ej: 30" min="0" step="1" oninput="calcFS()">
         <div class="hint">Sin fecundar — negro/rojizo uniforme</div>
       </div>
       <div class="field">
-        <label><em>FA</em>Frutos abortados</label>
+        <label><em>FA — C6</em>Frutos abortados</label>
         <input type="number" id="fs-fa" placeholder="Ej: 15" min="0" step="1" oninput="calcFS()">
         <div class="hint">Blancos, pequeños y vacíos</div>
       </div>
@@ -2766,8 +2766,8 @@ function limpiarFormulario(){
     var el=document.getElementById(id); if(el) el.value='';
   });
   document.getElementById('peso-carga').value='';
-  document.getElementById('tea-dia').value='';
   document.getElementById('fecha-analisis').value=new Date().toISOString().split('T')[0];
+  document.getElementById('tea-dia').value='';
   // Reset select RFF to 28
   var rffEl=document.getElementById('q-rff');
   if(rffEl) rffEl.value='28';
@@ -2922,7 +2922,7 @@ function renderHistorial(){
 
   body.innerHTML='<div class="hist-table-wrap"><table>'+
     '<thead><tr>'+
-      '<th>Fecha</th><th>Placa</th><th>Proveedor</th><th>Peso carga</th><th>TEA %</th>'+
+      '<th>Fecha</th><th>Placa</th><th>Proveedor</th><th>Peso carga</th>'+
       '<th>AR %</th><th>Humedad</th><th>Calidad</th><th style="text-align:center">Acciones</th>'+
     '</tr></thead>'+
     '<tbody>'+rows+'</tbody>'+
@@ -2940,7 +2940,7 @@ function exportarCSV(){
   hist.forEach(function(r){
     var q=r.calidad||{};
     rows.push([
-      r.fecha,r.placa,'"'+(r.proveedor||'')+ '"',r.pesoCarga||0,r.tea||'',
+      r.fecha,r.placa,'"'+(r.proveedor||'')+ '"',r.pesoCarga||0,
       r.ar.toFixed(3),r.fr.toFixed(3),r.mf.toFixed(3),r.hm.toFixed(3),r.amf.toFixed(3),
       r.estado,
       q.rff||0,q.verde||0,q.sobre||0,q.podrido||0,q.pedun||0,q.demo||0,q.corona||0,q.otras||0
@@ -3307,7 +3307,7 @@ function guardarEdicion(){
   r.placa    = document.getElementById('em-placa').value.trim().toUpperCase() || r.placa;
   r.proveedor= document.getElementById('em-proveedor').value.trim()||'—';
   r.pesoCarga= parseFloat(document.getElementById('em-peso').value)||0;
-  var teaVal = document.getElementById('em-tea').value; r.tea = teaVal!==''?parseFloat(teaVal)||null:null;
+  var teaVal=document.getElementById('em-tea').value; r.tea=teaVal!==''?parseFloat(teaVal)||null:null;
 
   // Recalcular con nuevos inputs
   var gv = function(id){var v=parseFloat(document.getElementById(id).value);return isNaN(v)?0:v;};
@@ -3391,6 +3391,10 @@ document.addEventListener('keydown',function(e){
         <div class="em-field">
           <label>Peso carga (kg)</label>
           <input type="number" id="em-peso" placeholder="Ej: 16200" min="0" step="1">
+        </div>
+        <div class="em-field">
+          <label>TEA del día (%)</label>
+          <input type="number" id="em-tea" placeholder="Ej: 22.5" step="0.01" min="0" max="100">
         </div>
       </div>
 
