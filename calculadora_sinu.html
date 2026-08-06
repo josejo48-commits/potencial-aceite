@@ -702,6 +702,21 @@ td.date{color:rgba(255,255,255,.4);font-family:'JetBrains Mono',monospace;font-s
         <input type="number" id="pfn" step="1" oninput="calcDebounced()">
         <div class="hint">Sin partenocárpicos ni abortados</div>
       </div>
+      <div class="field">
+        <label><em>C1</em>Peso del racimo</label>
+        <input type="number" id="prb" step="1" oninput="calcDebounced()">
+        <div class="hint">Gramos &mdash; racimo completo (con pedúnculo)</div>
+      </div>
+      <div class="field">
+        <label><em>C2</em>Peso del pedúnculo</label>
+        <input type="number" id="ppedunculo" step="1" oninput="calcDebounced()">
+        <div class="hint">Gramos &mdash; solo el pedúnculo</div>
+      </div>
+      <div class="field">
+        <label>Peso racimo neto</label>
+        <input type="number" id="prn" step="1" readonly style="background:#f1f5f9;color:#475569;cursor:not-allowed">
+        <div class="hint">Automático &mdash; Bruto &minus; Pedúnculo</div>
+      </div>
     </div>
     <div class="sdiv"><span>Resultado paso 1</span></div>
     <div class="metrics">
@@ -1665,7 +1680,7 @@ td.date{color:rgba(255,255,255,.4);font-family:'JetBrains Mono',monospace;font-s
         <div class="formula-box">
           <div style="font-size:15px; font-weight:700; color:#4ade80;">AR (%) = FR × MF × AMF</div>
           <div class="var-def">
-            <strong>FR</strong> = Frutos en Racimo (%) = (Peso frutos normales / Peso muestra raquilas) × 100<br>
+            <strong>FR</strong> = Frutos en Racimo (%) = (Peso frutos normales / Peso muestra raquilas) × (Peso racimo neto / Peso racimo bruto) × 100<br>
             <strong>MF</strong> = Mesocarpio en Fruto (%) = (Peso mesocarpio / Peso frutos muestra) × 100<br>
             <strong>AMF</strong> = Aceite en Mesocarpio Fresco (%) — obtenido en el paso 10<br>
             <strong>Fruit set</strong> = (N° frutos normales / N° total frutos posibles) × 100
@@ -1868,11 +1883,13 @@ td.date{color:rgba(255,255,255,.4);font-family:'JetBrains Mono',monospace;font-s
           <i class="fa-solid fa-seedling" style="color:#60a5fa;"></i> Paso 11A — Frutos en racimo (FR)
         </div>
         <div style="font-size:17px; font-weight:700; font-family:'Courier New',monospace; color:#4ade80; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.1); border-radius:7px; padding:10px 14px; margin-bottom:8px;">
-          FR (%) = (P<sub style="font-size:12px;">frutos normales</sub> / P<sub style="font-size:12px;">muestra raquilas</sub>) × 100
+          FR (%) = (P<sub style="font-size:12px;">frutos normales</sub> / P<sub style="font-size:12px;">muestra raquilas</sub>) × (P<sub style="font-size:12px;">racimo neto</sub> / P<sub style="font-size:12px;">racimo bruto</sub>) × 100
         </div>
         <div style="font-size:12px; color:rgba(255,255,255,.55); line-height:1.8;">
           <strong>P<sub>frutos normales</sub></strong> = Peso total de frutos normales de la muestra (g)<br>
-          <strong>P<sub>muestra raquilas</sub></strong> = Peso de la muestra de raquilas analizada (~3,5 kg)
+          <strong>P<sub>muestra raquilas</sub></strong> = Peso de la muestra de raquilas analizada (~3,5 kg)<br>
+          <strong>P<sub>racimo neto</sub></strong> = Peso del racimo sin pedúnculo (g)<br>
+          <strong>P<sub>racimo bruto</sub></strong> = Peso del racimo completo, con pedúnculo (g)
         </div>
       </div>
 
@@ -2545,11 +2562,18 @@ function calcDebounced(){clearTimeout(_debTimer);_debTimer=setTimeout(calc,120);
 
 function calc(){
   var praq=getVal('praq'),pfn=getVal('pfn');
+  var prb=getVal('prb'),pped=getVal('ppedunculo');
+  // C1 — Peso racimo neto = C2 (bruto) − Peso pedúnculo, se calcula solo
+  var prn=(!isNaN(prb)&&!isNaN(pped))?prb-pped:NaN;
+  var prnEl=document.getElementById('prn');
+  if(prnEl) prnEl.value=isNaN(prn)?'':prn;
   var pfm=getVal('pfm'),pnf=getVal('pnf'),pcs=getVal('pcs');
   var cap=getVal('cap'),mfr=getVal('mfr'),csec=getVal('csec');
 
   // Step-by-step — each step shows result independently
-  var fr=(!isNaN(praq)&&praq>0&&!isNaN(pfn))?(pfn/praq)*100:NaN;
+  // FR (%) = (Peso frutos muestra / Peso raquilas muestra) × (Peso racimo neto / Peso racimo bruto) × 100
+  var fr=(!isNaN(praq)&&praq>0&&!isNaN(pfn)&&!isNaN(prn)&&prn>=0&&!isNaN(prb)&&prb>0)
+    ?(pfn/praq)*(prn/prb)*100:NaN;
   var meso=(!isNaN(pfm)&&!isNaN(pnf))?pfm-pnf:NaN;
   var mf=(!isNaN(pfm)&&pfm>0&&!isNaN(meso))?(meso/pfm)*100:NaN;
   var cuesco=(!isNaN(pfm)&&pfm>0&&!isNaN(pcs)&&pcs>0)?(pcs/pfm)*100:NaN;
@@ -2737,11 +2761,12 @@ function guardarRegistro(){
       b7:getVal('q-b7')
     },
     fs:isNaN(_lastFS)?null:parseFloat(_lastFS.toFixed(2)),
-    fn:parseFloat(document.getElementById('fs-fn').value)||0,
-    fp:parseFloat(document.getElementById('fs-fp').value)||0,
-    fa:parseFloat(document.getElementById('fs-fa').value)||0,
+    fn:getVal('fs-fn'),
+    fp:getVal('fs-fp'),
+    fa:getVal('fs-fa'),
     inputs:{
       praq:getVal('praq'),pfn:getVal('pfn'),
+      prn:getVal('prn'),prb:getVal('prb'),ppedunculo:getVal('ppedunculo'),
       pfm:getVal('pfm'),pnf:getVal('pnf'),pcs:getVal('pcs'),
       cap:getVal('cap'),mfr:getVal('mfr'),csec:getVal('csec')
     }
@@ -2922,7 +2947,7 @@ function renderHistorial(){
 
   body.innerHTML='<div class="hist-table-wrap"><table>'+
     '<thead><tr>'+
-      '<th>Fecha</th><th>Placa</th><th>Proveedor</th><th>Peso carga</th><th>TEA %</th>'+
+      '<th>Fecha</th><th>Placa</th><th>Proveedor</th><th>Peso carga</th>'+
       '<th>AR %</th><th>Humedad</th><th>Calidad</th><th style="text-align:center">Acciones</th>'+
     '</tr></thead>'+
     '<tbody>'+rows+'</tbody>'+
@@ -2940,7 +2965,7 @@ function exportarCSV(){
   hist.forEach(function(r){
     var q=r.calidad||{};
     rows.push([
-      r.fecha,r.placa,'"'+(r.proveedor||'')+ '"',r.pesoCarga||0,r.tea||'',
+      r.fecha,r.placa,'"'+(r.proveedor||'')+ '"',r.pesoCarga||0,
       r.ar.toFixed(3),r.fr.toFixed(3),r.mf.toFixed(3),r.hm.toFixed(3),r.amf.toFixed(3),
       r.estado,
       q.rff||0,q.verde||0,q.sobre||0,q.podrido||0,q.pedun||0,q.demo||0,q.corona||0,q.otras||0
@@ -3172,7 +3197,7 @@ function openEditModal(docId,id){
 
   // Inputs laboratorio
   if(r.inputs){
-    var m={'praq':'em-praq','pfn':'em-pfn','pfm':'em-pfm','pnf':'em-pnf',
+    var m={'praq':'em-praq','pfn':'em-pfn','prn':'em-prn','prb':'em-prb','ppedunculo':'em-ppedunculo','pfm':'em-pfm','pnf':'em-pnf',
            'pcs':'em-pcs','cap':'em-cap','mfr':'em-mfr','csec':'em-csec'};
     Object.keys(m).forEach(function(k){
       var el=document.getElementById(m[k]);
@@ -3193,9 +3218,9 @@ function openEditModal(docId,id){
   });
 
   // Fruit Set
-  document.getElementById('em-fs-fn').value = r.fn!=null?r.fn:'';
-  document.getElementById('em-fs-fp').value = r.fp!=null?r.fp:'';
-  document.getElementById('em-fs-fa').value = r.fa!=null?r.fa:'';
+  document.getElementById('em-fs-fn').value = r.fn||0;
+  document.getElementById('em-fs-fp').value = r.fp||0;
+  document.getElementById('em-fs-fa').value = r.fa||0;
   recalcEditFS();
   recalcEdit();
   recalcEditCalidad();
@@ -3220,10 +3245,15 @@ function emGetVal(id){var v=parseFloat(document.getElementById(id).value);return
 
 function recalcEdit(){
   var praq=emGetVal('em-praq'), pfn=emGetVal('em-pfn');
+  var prb=emGetVal('em-prb'), pped=emGetVal('em-ppedunculo');
+  // C1 — Peso racimo neto = C2 (bruto) − Peso pedúnculo, se calcula solo
+  var prn=prb-pped;
+  var prnEl=document.getElementById('em-prn');
+  if(prnEl) prnEl.value=prn;
   var pfm=emGetVal('em-pfm'), pnf=emGetVal('em-pnf');
   var cap=emGetVal('em-cap'), mfr=emGetVal('em-mfr'), csec=emGetVal('em-csec');
 
-  var fr = praq>0 ? (pfn/praq)*100 : NaN;
+  var fr = (praq>0 && prb>0) ? (pfn/praq)*(prn/prb)*100 : NaN;
   var meso = pfm-pnf;
   var mf = pfm>0 ? (meso/pfm)*100 : NaN;
   var mseco = csec-cap;
@@ -3311,10 +3341,11 @@ function guardarEdicion(){
 
   // Recalcular con nuevos inputs
   var gv = function(id){var v=parseFloat(document.getElementById(id).value);return isNaN(v)?0:v;};
-  var praq=gv('em-praq'),pfn=gv('em-pfn'),pfm=gv('em-pfm'),pnf=gv('em-pnf');
+  var praq=gv('em-praq'),pfn=gv('em-pfn'),prb=gv('em-prb'),pped=gv('em-ppedunculo'),pfm=gv('em-pfm'),pnf=gv('em-pnf');
+  var prn=prb-pped;
   var cap=gv('em-cap'),mfr=gv('em-mfr'),csec=gv('em-csec'),pcs=gv('em-pcs');
 
-  var fr  = praq>0?(pfn/praq)*100:r.fr;
+  var fr  = (praq>0&&prb>0)?(pfn/praq)*(prn/prb)*100:r.fr;
   var meso= pfm-pnf;
   var mf  = pfm>0?(meso/pfm)*100:r.mf;
   var mseco=csec-cap;
@@ -3326,7 +3357,7 @@ function guardarEdicion(){
   r.estado = ar<19?'low':ar>30?'high':'ok';
 
   // Actualizar inputs guardados
-  r.inputs = {praq:praq,pfn:pfn,pfm:pfm,pnf:pnf,pcs:pcs,cap:cap,mfr:mfr,csec:csec};
+  r.inputs = {praq:praq,pfn:pfn,prn:prn,prb:prb,ppedunculo:pped,pfm:pfm,pnf:pnf,pcs:pcs,cap:cap,mfr:mfr,csec:csec};
 
   // Actualizar calidad
   var rff = parseInt(document.getElementById('em-rff').value)||28;
@@ -3403,6 +3434,9 @@ document.addEventListener('keydown',function(e){
       <div class="em-grid">
         <div class="em-field"><label>Peso raquilas (g) — C3</label><input type="number" id="em-praq" step="1" oninput="recalcEdit()"></div>
         <div class="em-field"><label>Peso frutos normales (g) — C8</label><input type="number" id="em-pfn" step="1" oninput="recalcEdit()"></div>
+        <div class="em-field"><label>Peso del racimo (g) — C1</label><input type="number" id="em-prb" step="1" oninput="recalcEdit()"></div>
+        <div class="em-field"><label>Peso del pedúnculo (g) — C2</label><input type="number" id="em-ppedunculo" step="1" oninput="recalcEdit()"></div>
+        <div class="em-field"><label>Peso racimo neto (g) — automático</label><input type="number" id="em-prn" step="1" readonly style="background:#f1f5f9;color:#475569;cursor:not-allowed"></div>
         <div class="em-field"><label>Peso frutos muestra (g) — C11</label><input type="number" id="em-pfm" step="1" oninput="recalcEdit()"></div>
         <div class="em-field"><label>Peso nueces frescas (g) — C13</label><input type="number" id="em-pnf" step="1" oninput="recalcEdit()"></div>
         <div class="em-field"><label>Peso cuesco seco (g) — C14</label><input type="number" id="em-pcs" step="1" oninput="recalcEdit()"></div>
